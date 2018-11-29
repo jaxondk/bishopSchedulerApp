@@ -9,18 +9,17 @@ const appointmentController = {
   create(req, res) {
     var requestBody = req.body;
 
-    var newslot = new Slot({
+    var newSlot = new Slot({
       slot_time: requestBody.slot_time,
       slot_date: requestBody.slot_date,
       created_at: Date.now()
     });
-    newslot.save();
+    newSlot.save();
     // Creates a new record from a submitted form
     var newappointment = new Appointment({
       name: requestBody.name,
-      email: requestBody.email,
       phone: requestBody.phone,
-      slots: newslot._id
+      slots: newSlot
     });
 
     // const nexmo = new Nexmo({
@@ -44,8 +43,8 @@ const appointmentController = {
         .populate("slots")
         .exec((err, appointment) => res.json(appointment));
 
-      const from = VIRTUAL_NUMBER;
-      const to = RECIPIENT_NUMBER;
+      // const from = VIRTUAL_NUMBER;
+      // const to = RECIPIENT_NUMBER;
 
       // nexmo.message.sendSms(from, to, msg, (err, responseData) => {
       //   if (err) {

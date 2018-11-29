@@ -28,12 +28,10 @@ class AppointmentApp extends Component {
     this.state = {
       firstName: "",
       lastName: "",
-      email: "",
       schedule: [],
       confirmationModalOpen: false,
       appointmentDateSelected: false,
       appointmentMeridiem: 0,
-      validEmail: true,
       validPhone: true,
       finished: false,
       smallScreen: window.innerWidth < 768,
@@ -60,7 +58,6 @@ class AppointmentApp extends Component {
     this.setState({ confirmationModalOpen: false });
     const newAppointment = {
       name: this.state.firstName + " " + this.state.lastName,
-      email: this.state.email,
       phone: this.state.phone,
       slot_date: moment(this.state.appointmentDate).format("YYYY-DD-MM"),
       slot_time: this.state.appointmentSlot
@@ -97,12 +94,6 @@ class AppointmentApp extends Component {
       this.setState({ stepIndex: stepIndex - 1 });
     }
   };
-  validateEmail(email) {
-    const regex = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-    return regex.test(email)
-      ? this.setState({ email: email, validEmail: true })
-      : this.setState({ validEmail: false });
-  }
   validatePhone(phoneNumber) {
     const regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
@@ -164,9 +155,6 @@ class AppointmentApp extends Component {
         </p>
         <p>
           Number: <span style={spanStyle}>{this.state.phone}</span>
-        </p>
-        <p>
-          Email: <span style={spanStyle}>{this.state.email}</span>
         </p>
         <p>
           Appointment:{" "}
@@ -271,9 +259,7 @@ class AppointmentApp extends Component {
       data.firstName &&
       data.lastName &&
       data.phone &&
-      data.email &&
-      data.validPhone &&
-      data.validEmail;
+      data.validPhone;
     const DatePickerExampleSimple = () => (
       <div>
         <DatePicker
@@ -384,18 +370,6 @@ class AppointmentApp extends Component {
                         floatingLabelText="Last Name"
                         onChange={(evt, newValue) =>
                           this.setState({ lastName: newValue })
-                        }
-                      />
-                      <TextField
-                        style={{ display: "block" }}
-                        name="email"
-                        hintText="youraddress@mail.com"
-                        floatingLabelText="Email"
-                        errorText={
-                          data.validEmail ? null : "Enter a valid email address"
-                        }
-                        onChange={(evt, newValue) =>
-                          this.validateEmail(newValue)
                         }
                       />
                       <TextField

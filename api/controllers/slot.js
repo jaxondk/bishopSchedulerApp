@@ -1,5 +1,5 @@
 const Model = require('../models/index');
-const {Appointment, Slot} = Model;
+const Slot = Model.Slot;
 
 const slotController = {
   all (req, res) {
@@ -10,7 +10,7 @@ const slotController = {
   create (req, res) {
     var requestBody = req.body;
 
-    var newslot = new Slot ({
+    var newSlot = new Slot ({
       slot_time: requestBody.slot_time,
       slot_date: requestBody.slot_date,
       created_at: Date.now()
