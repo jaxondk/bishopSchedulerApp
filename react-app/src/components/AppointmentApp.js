@@ -42,7 +42,8 @@ class AppointmentApp extends Component {
     axios.get(API_BASE + `api/retrieveSlots`).then(response => {
       console.log("response via db: ", response.data);
       this.handleDBReponse(response.data);
-    });
+    })
+    .catch((err) => console.log('err retrieving slots', err));
   }
   handleSetAppointmentDate(date) {
     this.setState({ appointmentDate: date, confirmationTextVisible: true });
@@ -375,7 +376,7 @@ class AppointmentApp extends Component {
                       <TextField
                         style={{ display: "block" }}
                         name="phone"
-                        hintText="+2348995989"
+                        hintText="1234567890"
                         floatingLabelText="Phone"
                         errorText={
                           data.validPhone ? null : "Enter a valid phone number"
