@@ -1,6 +1,5 @@
-
-const { Appointment, Slot } = Model;
 const Nexmo = require("nexmo");
+const { Appointment, Slot } = require("../models");
 
 const appointmentController = {
   all(req, res) {
@@ -24,10 +23,10 @@ const appointmentController = {
       slots: newslot._id
     });
 
-    const nexmo = new Nexmo({
-      apiKey: "YOUR_API_KEY",
-      apiSecret: "YOUR_API_SECRET"
-    });
+    // const nexmo = new Nexmo({
+    //   apiKey: "YOUR_API_KEY",
+    //   apiSecret: "YOUR_API_SECRET"
+    // });
 
     let msg =
       requestBody.name +
@@ -48,13 +47,13 @@ const appointmentController = {
       const from = VIRTUAL_NUMBER;
       const to = RECIPIENT_NUMBER;
 
-      nexmo.message.sendSms(from, to, msg, (err, responseData) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.dir(responseData);
-        }
-      });
+      // nexmo.message.sendSms(from, to, msg, (err, responseData) => {
+      //   if (err) {
+      //     console.log(err);
+      //   } else {
+      //     console.dir(responseData);
+      //   }
+      // });
     });
   }
 };
