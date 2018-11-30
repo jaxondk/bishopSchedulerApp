@@ -124,20 +124,20 @@ class AppointmentApp extends Component {
           const dateString = moment(slot_date, "YYYY-DD-MM").format(
             "YYYY-DD-MM"
           );
-          !currentSchedule[slot_date]
-            ? (currentSchedule[dateString] = Array(8).fill(false))
-            : null;
-          Array.isArray(currentSchedule[dateString])
-            ? (currentSchedule[dateString][slot_time] = true)
-            : null;
+          if(!currentSchedule[slot_date]) {
+            currentSchedule[dateString] = Array(8).fill(false);
+          }
+          if(Array.isArray(currentSchedule[dateString])) {
+            currentSchedule[dateString][slot_time] = true;
+          }
           return currentSchedule;
         }, initialSchedule);
 
     for (let day in schedule) {
       let slots = schedule[day];
-      slots.length
-        ? slots.every(slot => slot === true) ? (schedule[day] = true) : null
-        : null;
+      if(slots.length && slots.every(slot => slot === true)) {
+        schedule[day] = true;
+      }
     }
 
     this.setState({
