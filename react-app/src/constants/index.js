@@ -9,15 +9,15 @@ export const leader = {
 export const mockAppts = [
   {
     start: moment("3:30 PM", "H:mm a")._d,
-    end: new Date(moment().add(30, "minutes")),
-    title: "MOCK: Jaxon Keeler", // If we build custom calendar event component, this could be something like "Temple Recommend Renewal"
+    end: moment("4:00 PM", "H:mm a")._d,
+    title: "\nMOCK: Jaxon Keeler", // If we build custom calendar event component, this could be something like "Temple Recommend Renewal"
     member: "Jaxon Keeler",
     leader: leader.FIRST_C,
     phone: '8323144134'
   },
   {
     start: moment("4:00 PM", "H:mm a")._d,
-    end: new Date(moment().add(30, "minutes")),
+    end: moment("4:30 PM", "H:mm a")._d,
     title: "MOCK: Ileana Heaton",
     member: "Ileana Heaton",
     leader: leader.BISHOP,
@@ -25,7 +25,7 @@ export const mockAppts = [
   },
   {
     start: moment("4:30 PM", "H:mm a")._d,
-    end: new Date(moment().add(30, "minutes")),
+    end: moment("5:00 PM", "H:mm a")._d,
     title: "MOCK: Joe Schmoe",
     member: "Joe Schmoe",
     leader: leader.FIRST_C,
@@ -33,7 +33,7 @@ export const mockAppts = [
   },
   {
     start: moment("5:00 PM", "H:mm a")._d,
-    end: new Date(moment().add(30, "minutes")),
+    end: moment("5:30 PM", "H:mm a")._d,
     title: "MOCK: Dan Smith",
     member: "Dan Smith",
     leader: leader.SECOND_C,
