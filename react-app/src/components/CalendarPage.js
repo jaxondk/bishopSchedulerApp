@@ -11,23 +11,41 @@ class CalendarPage extends Component {
     events: [
       {
         start: new Date(),
-        end: new Date(moment().add(1, "days")),
+        end: new Date(moment().add(1, "hours")),
         title: "Example Event"
       }
     ]
   };
+
+  onSelectEvent(event) {
+    console.log('Event selected', event);
+    const remove = window.confirm("Would you like to remove this event?")
+    if(remove) {
+      //TODO - send text to member letting them know
+      this.setState((prevState, props) => {
+        const events = [...prevState.events]
+        const idx = events.indexOf(event)
+        events.splice(idx, 1);
+        return { events };
+      });
+    }
+  }
+
   render () {
     return (
       <div>
         <BigCalendar
-          views={['month', 'week', 'agenda']}
+          views={['month', 'week', 'day', 'agenda']}
           localizer={localizer}
-          step={60}
-          showMultiDayTimes
+          step={30}
           defaultDate={new Date()}
-          defaultView="month"
+          defaultView="week"
           events={this.state.events}
           style={{ height: "100vh" }}
+          onSelectEvent = {(event) => this.onSelectEvent(event)}
+          popup
+          min={moment("8:00 AM", "H:mm a")._d}
+          max={moment("6:00 PM", "H:mm a")._d}
         />
       </div>
     );
