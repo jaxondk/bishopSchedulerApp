@@ -2,26 +2,20 @@ import React, {Component} from 'react';
 import BigCalendar from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
+import { mockAppts } from '../constants';
 
 const localizer = BigCalendar.momentLocalizer(moment);
 // const allViews = Object.keys(BigCalendar.Views).map(k => BigCalendar.Views[k]);
 
 class CalendarPage extends Component {
   state = {
-    events: [
-      {
-        start: new Date(),
-        end: new Date(moment().add(1, "hours")),
-        title: "Example Event"
-      }
-    ]
+    events: mockAppts
   };
 
   onSelectEvent(event) {
-    console.log('Event selected', event);
-    const remove = window.confirm("Would you like to remove this event?")
+    const remove = window.confirm("Would you like to cancel this appointment?")
     if(remove) {
-      //TODO - send text to member letting them know
+      //TODO - send text to member letting them know about cancelation
       this.setState((prevState, props) => {
         const events = [...prevState.events]
         const idx = events.indexOf(event)
