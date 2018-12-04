@@ -29,8 +29,10 @@ class AppointmentApp extends Component {
       firstName: "",
       lastName: "",
       schedule: [],
+      appointmentDate: "",
       confirmationModalOpen: false,
       appointmentDateSelected: false,
+      appointmentSlot: null,
       appointmentMeridiem: 0,
       validPhone: true,
       finished: false,
@@ -46,7 +48,7 @@ class AppointmentApp extends Component {
     .catch((err) => console.log('err retrieving slots', err));
   }
   handleSetAppointmentDate(date) {
-    this.setState({ appointmentDate: date, confirmationTextVisible: true });
+    this.setState({ appointmentDate: date, confirmationTextVisible: true, appointmentDateSelected: true });
   }
 
   handleSetAppointmentSlot(slot) {
@@ -79,6 +81,7 @@ class AppointmentApp extends Component {
           confirmationSnackbarOpen: true
         });
       });
+      {this.renderSuccessDialog()}
   }
   
   handleNext = () => {
@@ -99,7 +102,7 @@ class AppointmentApp extends Component {
     const regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
       ? this.setState({ phone: phoneNumber, validPhone: true })
-      : this.setState({ validPhone: false });
+      : this.setState({ phone: phoneNumber, validPhone: false });
   }
   checkDisableDate(day) {
     const dateString = moment(day).format("YYYY-DD-MM");
@@ -176,6 +179,40 @@ class AppointmentApp extends Component {
       </section>
     );
   }
+
+  renderSuccessDialog() {
+    const spanStyle = { color: "#00C853" };
+    return (
+      <section>
+        <p>
+          Thank you, {" "}
+          <span style={spanStyle}>
+            {this.state.firstName} {this.state.lastName}
+          </span>!
+        </p>
+        <p>
+          Your appointment has been scheduled for{" "}
+          <span style={spanStyle}>
+            {moment(this.state.appointmentDate).format(
+              "dddd[,] MMMM Do[,] YYYY"
+            )}
+          </span>{" "}
+          at{" "}
+          <span style={spanStyle}>
+            {moment()
+              .hour(9)
+              .minute(0)
+              .add(this.state.appointmentSlot, "hours")
+              .format("h:mm a")}
+          </span>.
+        </p>
+        <p>
+          A reminder will be sent to <span style={spanStyle}>{this.state.phone}</span>.
+        </p>
+      </section>
+    );
+  }
+
   renderAppointmentTimes() {
     if (!this.state.isLoading) {
       const slots = [...Array(8).keys()];
@@ -217,17 +254,51 @@ class AppointmentApp extends Component {
     }
   }
 
+  formIsFilled(stepIndex, data) {
+    console.log(stepIndex);
+    console.log(data);
+    if(stepIndex===0 && data.appointmentDateSelected){
+      return true;
+    }
+    if(stepIndex===1 && data.appointmentSlot!==null){
+      return true;
+    }
+    if(stepIndex===2 && 
+      data.firstName &&
+      data.lastName &&
+      data.phone &&
+      data.validPhone){
+      return true;
+    }
+    return false;
+  };
+
   renderStepActions(step) {
-    const { stepIndex } = this.state;
+    const { stepIndex, ...data } = this.state;
+    const finished = stepIndex >= 2;
+    const contactFormFilled =
+      data.firstName &&
+      data.lastName &&
+      data.phone &&
+      data.validPhone;
+
 
     return (
       <div style={{ margin: "12px 0" }}>
         <RaisedButton
-          label={stepIndex === 2 ? "Finish" : "Next"}
+          label={stepIndex === 2 ? "Schedule" : "Next"}
           disableTouchRipple={true}
           disableFocusRipple={true}
           primary={true}
-          onClick={this.handleNext}
+          onClick={ 
+            finished === true 
+            ? () => this.setState({
+                  confirmationModalOpen: !this.state
+                    .confirmationModalOpen
+              }) 
+            : this.handleNext
+          }
+          disabled={!this.formIsFilled(stepIndex, data)}//(finished === true && !contactFormFilled) || data.processed}
           backgroundColor="#00C853 !important"
           style={{ marginRight: 12, backgroundColor: "#00C853" }}
         />
@@ -265,6 +336,7 @@ class AppointmentApp extends Component {
       <div>
         <DatePicker
           hintText="Select Date"
+          value= {data.appointmentDate}
           mode={smallScreen ? "portrait" : "landscape"}
           onChange={(n, date) => this.handleSetAppointmentDate(date)}
           shouldDisableDate={day => this.checkDisableDate(day)}
@@ -287,8 +359,9 @@ class AppointmentApp extends Component {
     return (
       <div>
         <AppBar
-          title="Appointment Scheduler"
+          title="Bishop Appointment Scheduler"
           iconClassNameRight="muidocs-icon-navigation-expand-more"
+          showMenuIconButton={false}
         />
         <section
           style={{
@@ -309,7 +382,7 @@ class AppointmentApp extends Component {
               linear={false}
             >
               <Step>
-                <StepLabel>
+                <StepLabel  disabled={stepIndex!==0}>
                   Choose an available day for your appointment
                 </StepLabel>
                 <StepContent>
@@ -318,7 +391,7 @@ class AppointmentApp extends Component {
                 </StepContent>
               </Step>
               <Step disabled={!data.appointmentDate}>
-                <StepLabel>
+                <StepLabel  disabled={stepIndex!==1}>
                   Choose an available time for your appointment
                 </StepLabel>
                 <StepContent>
@@ -348,7 +421,7 @@ class AppointmentApp extends Component {
                 </StepContent>
               </Step>
               <Step>
-                <StepLabel>
+                <StepLabel  disabled={stepIndex!==2}>
                   Share your contact information with us and we'll send you a
                   reminder
                 </StepLabel>
@@ -359,6 +432,7 @@ class AppointmentApp extends Component {
                         style={{ display: "block" }}
                         name="first_name"
                         hintText="First Name"
+                        value={data.firstName}
                         floatingLabelText="First Name"
                         onChange={(evt, newValue) =>
                           this.setState({ firstName: newValue })
@@ -369,6 +443,7 @@ class AppointmentApp extends Component {
                         name="last_name"
                         hintText="Last Name"
                         floatingLabelText="Last Name"
+                        value={data.lastName}
                         onChange={(evt, newValue) =>
                           this.setState({ lastName: newValue })
                         }
@@ -378,31 +453,13 @@ class AppointmentApp extends Component {
                         name="phone"
                         hintText="1234567890"
                         floatingLabelText="Phone"
+                        value={data.phone}
                         errorText={
                           data.validPhone ? null : "Enter a valid phone number"
                         }
                         onChange={(evt, newValue) =>
                           this.validatePhone(newValue)
                         }
-                      />
-                      <RaisedButton
-                        style={{ display: "block", backgroundColor: "#00C853" }}
-                        label={
-                          contactFormFilled
-                            ? "Schedule"
-                            : "Fill out your information to schedule"
-                        }
-                        labelPosition="before"
-                        primary={true}
-                        fullWidth={true}
-                        onClick={() =>
-                          this.setState({
-                            confirmationModalOpen: !this.state
-                              .confirmationModalOpen
-                          })
-                        }
-                        disabled={!contactFormFilled || data.processed}
-                        style={{ marginTop: 20, maxWidth: 100 }}
                       />
                     </section>
                   </p>
@@ -419,7 +476,36 @@ class AppointmentApp extends Component {
           >
             {this.renderAppointmentConfirmation()}
           </Dialog>
-          <SnackBar
+          <Dialog
+            modal={true}
+            open={confirmationSnackbarOpen}
+            actions={
+            <FlatButton
+              label="OK"
+              primary={false}
+              onClick={() => this.setState({ 
+                confirmationSnackbarOpen: false,
+                firstName: "",
+                lastName: "",
+                appointmentDate: "",
+                phone: "",
+                schedule: [],
+                confirmationModalOpen: false,
+                appointmentDateSelected: false,
+                appointmentSlot: null,
+                appointmentMeridiem: 0,
+                validPhone: true,
+                finished: false,
+                smallScreen: window.innerWidth < 768,
+                stepIndex: 0
+              })}
+            />
+            }
+            title="Appointment Scheduled!"
+          >
+            {this.renderSuccessDialog()}
+          </Dialog>
+          {/* <SnackBar
             open={confirmationSnackbarOpen || isLoading}
             message={
               isLoading ? "Loading... " : data.confirmationSnackbarMessage || ""
@@ -428,7 +514,7 @@ class AppointmentApp extends Component {
             onRequestClose={() =>
               this.setState({ confirmationSnackbarOpen: false })
             }
-          />
+          /> */}
         </section>
       </div>
     );
