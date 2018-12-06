@@ -5,11 +5,11 @@ const Schema = mongoose.Schema,
   ObjectId = mongoose.Schema.Types.ObjectId;
 
 
-  const slotSchema = new Schema ({
-    slot_time: String,
-    slot_date: String,
-    created_at: Date
-  });
+const slotSchema = new Schema ({
+  slot_time: String,
+  slot_date: String,
+  created_at: Date
+});
 
 const Slot = model('Slot', slotSchema);
 
@@ -23,6 +23,18 @@ const appointmentSchema = new Schema({
 
 const Appointment = model('Appointment', appointmentSchema);
 
+const slot2Schema = new Schema ({
+  start: Date,
+  end: Date,
+  appointment: {
+    title: String,
+    name: String,
+    phone: Number,
+  }
+});
+
+const Slot2 = model('Slot2', slot2Schema);
+
 module.exports = {
-  Appointment, Slot
+  Appointment, Slot, Slot2
 };
