@@ -23,7 +23,6 @@ const slot2Controller = {
         .exec((err, savedSlot) => res.json(savedSlot));
     })
   },
-  //TODO - update slot with an appt.
   updateById (req, res) {
     const id = req.params.slotId
     const update = req.body;
@@ -31,14 +30,6 @@ const slot2Controller = {
       if (err) return res.status(500).send(err);
       return res.send(slotToUpdate);
     });
-    // Slot2.findOne({_id: body._id })
-    //   .exec((err, slotToUpdate) => {
-    //     slotToUpdate.appointment = body.appointment;
-    //     slotToUpdate.save((err, saved) => {
-    //       Slot2.findOne({ _id: saved._id })
-    //         .exec((err, savedSlot) => res.json(savedSlot));
-    //     })
-    //   })
   }
 
   //TODO
