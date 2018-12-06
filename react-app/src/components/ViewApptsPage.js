@@ -7,7 +7,7 @@ import { mockAppts } from '../constants';
 const localizer = BigCalendar.momentLocalizer(moment);
 // const allViews = Object.keys(BigCalendar.Views).map(k => BigCalendar.Views[k]);
 
-class CalendarPage extends Component {
+class ViewApptsPage extends Component {
   state = {
     events: mockAppts
   };
@@ -46,4 +46,4 @@ class CalendarPage extends Component {
   }
 }
 
-export default CalendarPage;
+export default ViewApptsPage;

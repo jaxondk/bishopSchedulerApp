@@ -39,7 +39,7 @@ class AppointmentApp extends Component {
     };
   }
   componentWillMount() {
-    axios.get(API_BASE + `api/retrieveSlots`).then(response => {
+    axios.get(API_BASE + `api/slots2`).then(response => {
       console.log("response via db: ", response.data);
       this.handleDBReponse(response.data);
     })
@@ -64,7 +64,7 @@ class AppointmentApp extends Component {
       slot_time: this.state.appointmentSlot
     };
     axios
-      .post(API_BASE + "api/appointmentCreate", newAppointment)
+      .post(API_BASE + "api/appointmentCreate", newAppointment) // Instead, use slot2controller's update with appt call
       .then(response =>
         this.setState({
           confirmationSnackbarMessage: "Appointment succesfully added!",
