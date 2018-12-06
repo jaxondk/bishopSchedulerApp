@@ -33,7 +33,7 @@ const slot2Schema = new Schema ({
   }
 });
 
-const Slot2 = model('Slot2', slot2Schema);
+const Slot2 = model('Slot2', slot2Schema, 'slots2');
 
 module.exports = {
   Appointment, Slot, Slot2
