@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
+// import logo from "./logo.svg";
 import AppointmentApp from "./components/AppointmentApp.js";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";

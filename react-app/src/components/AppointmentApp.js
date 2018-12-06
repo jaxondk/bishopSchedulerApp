@@ -8,7 +8,7 @@ import Dialog from "material-ui/Dialog";
 import SelectField from "material-ui/SelectField";
 import MenuItem from "material-ui/MenuItem";
 import TextField from "material-ui/TextField";
-import SnackBar from "material-ui/Snackbar";
+// import SnackBar from "material-ui/Snackbar";
 import Card from "material-ui/Card";
 import {
   Step,
@@ -33,7 +33,7 @@ class AppointmentApp extends Component {
       confirmationModalOpen: false,
       appointmentDateSelected: false,
       appointmentSlot: null,
-      appointmentMeridiem: 0,
+      // appointmentMeridiem: 0,
       validPhone: true,
       finished: false,
       smallScreen: window.innerWidth < 768,
@@ -81,7 +81,7 @@ class AppointmentApp extends Component {
           confirmationSnackbarOpen: true
         });
       });
-      {this.renderSuccessDialog()}
+      this.renderSuccessDialog()
   }
   
   handleNext = () => {
@@ -99,7 +99,7 @@ class AppointmentApp extends Component {
     }
   };
   validatePhone(phoneNumber) {
-    const regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+    const regex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
       ? this.setState({ phone: phoneNumber, validPhone: true })
       : this.setState({ phone: phoneNumber, validPhone: false });
@@ -233,9 +233,6 @@ class AppointmentApp extends Component {
               moment(this.state.appointmentDate).format("YYYY-DD-MM")
             ][slot]
           : false;
-        const meridiemDisabled = this.state.appointmentMeridiem
-          ? time1.format("a") === "am"
-          : time1.format("a") === "pm";
         return (
           <RadioButton
             label={time1.format("h:mm a") + " - " + time2.format("h:mm a")}
@@ -243,9 +240,8 @@ class AppointmentApp extends Component {
             value={slot}
             style={{
               marginBottom: 15,
-              display: meridiemDisabled ? "none" : "inherit"
             }}
-            disabled={scheduleDisabled || meridiemDisabled}
+            disabled={scheduleDisabled}
           />
         );
       });
@@ -255,8 +251,7 @@ class AppointmentApp extends Component {
   }
 
   formIsFilled(stepIndex, data) {
-    console.log(stepIndex);
-    console.log(data);
+    // console.log(stepIndex);
     if(stepIndex===0 && data.appointmentDateSelected){
       return true;
     }
@@ -276,12 +271,6 @@ class AppointmentApp extends Component {
   renderStepActions(step) {
     const { stepIndex, ...data } = this.state;
     const finished = stepIndex >= 2;
-    const contactFormFilled =
-      data.firstName &&
-      data.lastName &&
-      data.phone &&
-      data.validPhone;
-
 
     return (
       <div style={{ margin: "12px 0" }}>
@@ -324,14 +313,9 @@ class AppointmentApp extends Component {
       smallScreen,
       stepIndex,
       confirmationModalOpen,
-      confirmationSnackbarOpen,
+      confirmationSnackbarOpen=false,
       ...data
     } = this.state;
-    const contactFormFilled =
-      data.firstName &&
-      data.lastName &&
-      data.phone &&
-      data.validPhone;
     const DatePickerExampleSimple = () => (
       <div>
         <DatePicker
@@ -395,17 +379,6 @@ class AppointmentApp extends Component {
                   Choose an available time for your appointment
                 </StepLabel>
                 <StepContent>
-                  <SelectField
-                    floatingLabelText="AM/PM"
-                    value={data.appointmentMeridiem}
-                    onChange={(evt, key, payload) =>
-                      this.handleSetAppointmentMeridiem(payload)
-                    }
-                    selectionRenderer={value => (value ? "PM" : "AM")}
-                  >
-                    <MenuItem value={0} primaryText="AM" />
-                    <MenuItem value={1} primaryText="PM" />
-                  </SelectField>
                   <RadioButtonGroup
                     style={{
                       marginTop: 15,
