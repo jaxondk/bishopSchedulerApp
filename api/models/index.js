@@ -6,8 +6,13 @@ const Schema = mongoose.Schema,
 
 
   const slotSchema = new Schema ({
+    // id: ObjectId,
     slot_time: String,
     slot_date: String,
+    slot_durationInMinutes: Number,
+    slot_time_hour: Number,
+    slot_time_minute: Number,
+    slot_time_ampm: String,
     created_at: Date
   });
 
@@ -17,7 +22,7 @@ const appointmentSchema = new Schema({
   id: ObjectId,
   name: String,
   phone: Number,
-  slots:{type: ObjectId, ref: 'Slot'},
+  slot:{type: ObjectId, ref: 'Slot'},
   created_at: Date
 });
 

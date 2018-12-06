@@ -33,11 +33,12 @@ class AppointmentApp extends Component {
       confirmationModalOpen: false,
       appointmentDateSelected: false,
       appointmentSlot: null,
-      appointmentMeridiem: 0,
+      // appointmentMeridiem: 0,
       validPhone: true,
       finished: false,
       smallScreen: window.innerWidth < 768,
-      stepIndex: 0
+      stepIndex: 0,
+      openSlots: []
     };
   }
   componentWillMount() {
@@ -54,16 +55,17 @@ class AppointmentApp extends Component {
   handleSetAppointmentSlot(slot) {
     this.setState({ appointmentSlot: slot });
   }
-  handleSetAppointmentMeridiem(meridiem) {
-    this.setState({ appointmentMeridiem: meridiem });
-  }
+  // handleSetAppointmentMeridiem(meridiem) {
+  //   this.setState({ appointmentMeridiem: meridiem });
+  // }
   handleSubmit() {
     this.setState({ confirmationModalOpen: false });
     const newAppointment = {
       name: this.state.firstName + " " + this.state.lastName,
       phone: this.state.phone,
       slot_date: moment(this.state.appointmentDate).format("YYYY-DD-MM"),
-      slot_time: this.state.appointmentSlot
+      slot_time: this.state.appointmentSlot,
+      slot_durationInMinutes: 30
     };
     axios
       .post(API_BASE + "api/appointmentCreate", newAppointment)
@@ -116,23 +118,31 @@ class AppointmentApp extends Component {
 
   
   handleDBReponse(response) {
-    const appointments = response;
+    const slots = response;
+
+    //keeps track of all open slots in db
+    this.setState({openSlots: response});
+
     const today = moment().startOf("day"); //start of today 12 am
     const initialSchedule = {};
     initialSchedule[today.format("YYYY-DD-MM")] = true;
-    const schedule = !appointments.length
+    const schedule = !slots.length  //if there are open slots..
       ? initialSchedule
-      : appointments.reduce((currentSchedule, appointment) => {
-          const { slot_date, slot_time } = appointment;
+      : slots.reduce((currentSchedule, slot) => { //for each slot, 
+          const { slot_date, slot_time } = slot;
           const dateString = moment(slot_date, "YYYY-DD-MM").format(
             "YYYY-DD-MM"
           );
-          if(!currentSchedule[slot_date]) {
-            currentSchedule[dateString] = Array(8).fill(false);
-          }
-          if(Array.isArray(currentSchedule[dateString])) {
-            currentSchedule[dateString][slot_time] = true;
-          }
+          currentSchedule[dateString] = [];
+          //if there's nothing in the current schedule for this date, push this open slot onto array
+          // if(!currentSchedule[slot_date].length) {
+            currentSchedule[dateString].push(slot);
+          // }
+          // //else if the date has slots, show slot is open.. (new: is open to take)
+          // if(currentSchedule[dateString].length) {
+          //   currentSchedule[dateString][slot_time] = true;
+          // }
+          console.log("currentSchedule: ", currentSchedule);
           return currentSchedule;
         }, initialSchedule);
 
@@ -215,39 +225,57 @@ class AppointmentApp extends Component {
 
   renderAppointmentTimes() {
     if (!this.state.isLoading) {
-      const slots = [...Array(8).keys()];
+      const allSlots = this.state.openSlots; //[...Array(8).keys()];
+      // console.log("allSlots: ", allSlots);
+      const slots = [];
+      const appointmentDate = moment(this.state.appointmentDate).format("YYYY-DD-MM");
+      if(this.state.appointmentDate){
+        allSlots.forEach(function(eachslot) {
+        // console.log("eachSlot.slot_date: ", eachslot.slot_date);
+        // console.log("this.state.appointmentDate: ", appointmentDate);
+        if(eachslot.slot_date === appointmentDate){
+          slots.push(eachslot);
+        }
+      });
+    }
+      // console.log("slots: ", slots);
       return slots.map(slot => {
+        // console.log("slot: ", slot);
         const appointmentDateString = moment(this.state.appointmentDate).format(
           "YYYY-DD-MM"
         );
+        if(appointmentDateString === slot.slot_date){
         const time1 = moment()
-          .hour(9)
+          .hour(0)
           .minute(0)
-          .add(slot, "hours");
+          .add(slot.slot_time_hour, "hours")
+          .add(slot.slot_time_minute, "minutes");
         const time2 = moment()
-          .hour(9)
+          .hour(0)
           .minute(0)
-          .add(slot + 1, "hours");
+          .add(slot.slot_time_hour, "hours")
+          .add(slot.slot_time_minute + slot.slot_durationInMinutes, "minutes");
         const scheduleDisabled = this.state.schedule[appointmentDateString]
           ? this.state.schedule[
               moment(this.state.appointmentDate).format("YYYY-DD-MM")
             ][slot]
           : false;
-        const meridiemDisabled = this.state.appointmentMeridiem
-          ? time1.format("a") === "am"
-          : time1.format("a") === "pm";
+        // const meridiemDisabled = this.state.appointmentMeridiem
+        //   ? time1.format("a") === "am"
+        //   : time1.format("a") === "pm";
         return (
           <RadioButton
             label={time1.format("h:mm a") + " - " + time2.format("h:mm a")}
-            key={slot}
+            key={slot._id}
             value={slot}
             style={{
               marginBottom: 15,
-              display: meridiemDisabled ? "none" : "inherit"
+              // display: meridiemDisabled ? "none" : "inherit"
             }}
-            disabled={scheduleDisabled || meridiemDisabled}
+            disabled={scheduleDisabled}// || meridiemDisabled}
           />
         );
+          }
       });
     } else {
       return null;
@@ -255,8 +283,8 @@ class AppointmentApp extends Component {
   }
 
   formIsFilled(stepIndex, data) {
-    console.log(stepIndex);
-    console.log(data);
+    // console.log(stepIndex);
+    // console.log(data);
     if(stepIndex===0 && data.appointmentDateSelected){
       return true;
     }
@@ -340,6 +368,7 @@ class AppointmentApp extends Component {
           mode={smallScreen ? "portrait" : "landscape"}
           onChange={(n, date) => this.handleSetAppointmentDate(date)}
           shouldDisableDate={day => this.checkDisableDate(day)}
+          // includeDates={}
         />
       </div>
     );
@@ -356,6 +385,7 @@ class AppointmentApp extends Component {
         onClick={() => this.handleSubmit()}
       />
     ];
+    console.log(data);
     return (
       <div>
         <AppBar
@@ -395,7 +425,7 @@ class AppointmentApp extends Component {
                   Choose an available time for your appointment
                 </StepLabel>
                 <StepContent>
-                  <SelectField
+                  {/* <SelectField
                     floatingLabelText="AM/PM"
                     value={data.appointmentMeridiem}
                     onChange={(evt, key, payload) =>
@@ -405,7 +435,7 @@ class AppointmentApp extends Component {
                   >
                     <MenuItem value={0} primaryText="AM" />
                     <MenuItem value={1} primaryText="PM" />
-                  </SelectField>
+                  </SelectField> */}
                   <RadioButtonGroup
                     style={{
                       marginTop: 15,
@@ -493,7 +523,7 @@ class AppointmentApp extends Component {
                 confirmationModalOpen: false,
                 appointmentDateSelected: false,
                 appointmentSlot: null,
-                appointmentMeridiem: 0,
+                // appointmentMeridiem: 0,
                 validPhone: true,
                 finished: false,
                 smallScreen: window.innerWidth < 768,

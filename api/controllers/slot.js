@@ -13,6 +13,10 @@ const slotController = {
     var newSlot = new Slot ({
       slot_time: requestBody.slot_time,
       slot_date: requestBody.slot_date,
+      slot_time_hour: requestBody.slot_time_hour,
+      slot_time_minute: requestBody.slot_time_minute,
+      slot_time_ampm: requestBody.slot_time_ampm,
+      slot_durationInMinutes: requestBody.slot_durationInMinutes,
       created_at: Date.now()
     });
     newSlot.save((err, saved) => {
