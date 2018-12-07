@@ -55,17 +55,14 @@ class SlotPickerPage extends Component {
     if (create) {
       const range = moment.range(start, end);
       var times = Array.from(range.by('minutes', {step: this.state.apptDuration}));
-      const new_slots = times.reduce((result, start_moment, i) => {
+      times.forEach((start_moment, i) => {
         if(i !== times.length - 1) {
-          result.push({
+          const new_slot = {
             start: start_moment._d,
-            end: times[i+1]._d
-          })
+            end: times[i+1]._d,
+          };
+          conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
         }
-        return result;
-      }, []);
-      new_slots.forEach(new_slot => {
-        conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot]}));
       });
     }
   }
