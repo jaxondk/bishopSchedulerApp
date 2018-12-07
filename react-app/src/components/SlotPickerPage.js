@@ -70,12 +70,16 @@ class SlotPickerPage extends Component {
     }
   }
 
+  eventStyleGetter() {
+    //TODO
+  }
+
   render () {
     console.log('all slots', this.state.allSlots);
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          title="Choose Your Available Times"
+          title="Bishop's Schedule"
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
@@ -90,7 +94,7 @@ class SlotPickerPage extends Component {
         /> */}
         <div style={styles.calendarContainer}>
           <BigCalendar
-            views={['week']}
+            views={['day', 'week', 'month','agenda']}
             localizer={localizer}
             step={this.state.apptDuration}
             defaultDate={new Date()}
