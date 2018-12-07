@@ -2,13 +2,14 @@ import React, {Component} from 'react';
 import AppBar from "material-ui/AppBar";
 import BigCalendar from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import moment from "moment";
+import Moment from 'moment';
+import { extendMoment } from 'moment-range';
+
 // import InputSlider from 'react-input-slider';
-
-
+import conn from '../lib/conn';
+const moment = extendMoment(Moment);
 
 const localizer = BigCalendar.momentLocalizer(moment);
-
 const styles = {
   pageContainer: {
     flex: 1,
@@ -23,10 +24,18 @@ const styles = {
 }
 
 class SlotPickerPage extends Component {
-  state = {
-    events: [],
-    apptDuration: 60 //in minutes
-  };
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      events: [],
+      allSlots: [],
+      apptDuration: 60 //in minutes
+    };
+  }
+
+  componentDidMount() {
+    conn.getSlots((data) => this.setState({allSlots: data}))
+  }
 
   onSelectEvent(event) {
     const remove = window.confirm("Would you like to remove this time slot?")
@@ -42,24 +51,27 @@ class SlotPickerPage extends Component {
   }
 
   handleSelect = ({ start, end }) => {
-    const create = window.confirm('Create new available time slot?')
+    const create = window.confirm('Create new available time slots from this range?')
     if (create) {
-      const title = 'Available';
-      this.setState({
-        events: [
-          ...this.state.events,
-          {
-            start,
-            end,
-            title,
-          },
-        ],
+      const range = moment.range(start, end);
+      var times = Array.from(range.by('minutes', {step: this.state.apptDuration}));
+      const new_slots = times.reduce((result, start_moment, i) => {
+        if(i !== times.length - 1) {
+          result.push({
+            start: start_moment._d,
+            end: times[i+1]._d
+          })
+        }
+        return result;
+      }, []);
+      new_slots.forEach(new_slot => {
+        conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot]}));
       });
-      console.log(this.state.events);
     }
   }
 
   render () {
+    console.log('all slots', this.state.allSlots);
     return (
       <div style={styles.pageContainer}>
         <AppBar

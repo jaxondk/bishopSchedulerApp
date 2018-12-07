@@ -10,7 +10,7 @@ class App extends Component {
     return (
       <div>
         <MuiThemeProvider>
-          <AppointmentApp />
+          <SlotPickerPage />
         </MuiThemeProvider>
       </div>
     );

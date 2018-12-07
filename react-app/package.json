@@ -6,11 +6,12 @@
     "axios": "^0.17.1",
     "material-ui": "^0.20.0",
     "moment": "^2.20.1",
+    "moment-range": "^4.0.1",
     "react": "^16.2.0",
     "react-big-calendar": "0.19.2",
     "react-dom": "^16.2.0",
-    "react-scripts": "^2.1.1",
-    "react-input-slider": "^4.0.1"
+    "react-input-slider": "^4.0.1",
+    "react-scripts": "^2.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
