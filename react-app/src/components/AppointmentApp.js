@@ -28,11 +28,13 @@ class AppointmentApp extends Component {
     this.state = {
       firstName: "",
       lastName: "",
+      phone: "",
       schedule: [],
       appointmentDate: "",
       confirmationModalOpen: false,
       appointmentDateSelected: false,
       appointmentSlot: null,
+      appointmentTitle: "",
       // appointmentMeridiem: 0,
       validPhone: true,
       finished: false,
@@ -68,11 +70,10 @@ class AppointmentApp extends Component {
     const newAppointment = {
       name: this.state.firstName + " " + this.state.lastName,
       phone: this.state.phone,
-      slot_date: moment(this.state.appointmentDate).format("YYYY-DD-MM"),
-      slot_time: this.state.appointmentSlot
+      title: this.state.appointmentTitle
     };
     axios
-      .post(API_BASE + "appointmentCreate", newAppointment) // Instead, use slot2controller's update with appt call
+      .put(API_BASE + "slots/"+ this.state.appointmentSlot._id, newAppointment) // Instead, use slot2controller's update with appt call
       .then(response =>
         this.setState({
           confirmationSnackbarMessage: "Appointment succesfully added!",
@@ -87,7 +88,7 @@ class AppointmentApp extends Component {
           confirmationSnackbarOpen: true
         });
       });
-      this.renderSuccessDialog()
+    this.renderSuccessDialog();
   }
   
   handleNext = () => {
@@ -122,7 +123,7 @@ class AppointmentApp extends Component {
 
   
   handleDBReponse(response) {
-    const appointments = response;
+    // const appointments = response;
     const openSlots = {};
     response.forEach(function(slot){  
       const {start, appointment} = slot;
@@ -174,35 +175,37 @@ class AppointmentApp extends Component {
   }
   renderAppointmentConfirmation() {
     const spanStyle = { color: "#00C853" };
-    return (
-      <section>
-        <p>
-          Name:{" "}
-          <span style={spanStyle}>
-            {this.state.firstName} {this.state.lastName}
-          </span>
-        </p>
-        <p>
-          Number: <span style={spanStyle}>{this.state.phone}</span>
-        </p>
-        <p>
-          Appointment:{" "}
-          <span style={spanStyle}>
-            {moment(this.state.appointmentDate).format(
-              "dddd[,] MMMM Do[,] YYYY"
-            )}
-          </span>{" "}
-          at{" "}
-          <span style={spanStyle}>
-            {moment()
-              .hour(9)
-              .minute(0)
-              .add(this.state.appointmentSlot, "hours")
-              .format("h:mm a")}
-          </span>
-        </p>
-      </section>
-    );
+    if(this.state.appointmentSlot){
+      return (
+        <section>
+          <p>
+            Name:{" "}
+            <span style={spanStyle}>
+              {this.state.firstName} {this.state.lastName}
+            </span>
+          </p>
+          <p>
+            Number: <span style={spanStyle}>{this.state.phone}</span>
+          </p>
+          <p>
+            Appointment:{" "}
+            <span style={spanStyle}>
+              {moment(this.state.appointmentSlot.start).format(
+                "dddd[,] MMMM Do[,] YYYY"
+              )}
+            </span>{" "}
+            at{" "}
+            <span style={spanStyle}>
+              {moment(this.state.appointmentSlot.start)
+                // .hour(9)
+                // .minute(0)
+                // .add(this.state.appointmentSlot.start, "hours")
+                .format("h:mm a")}
+            </span>
+          </p>
+        </section>
+      );
+    }
   }
 
   renderSuccessDialog() {
@@ -224,10 +227,10 @@ class AppointmentApp extends Component {
           </span>{" "}
           at{" "}
           <span style={spanStyle}>
-            {moment()
-              .hour(9)
-              .minute(0)
-              .add(this.state.appointmentSlot, "hours")
+            {moment(this.state.appointmentSlot)
+              // .hour(9)
+              // .minute(0)
+              // .add(this.state.appointmentSlot, "hours")
               .format("h:mm a")}
           </span>.
         </p>
@@ -240,21 +243,21 @@ class AppointmentApp extends Component {
 
   renderAppointmentTimes() {
     if (!this.state.isLoading) {
-      console.log("state: ", this.state);
+      // console.log("state: ", this.state);
       if(this.state.availableAppointmentSlots){
-        console.log("rendering appt. times AFTER DATE SELECTION");
+        // console.log("rendering appt. times AFTER DATE SELECTION");
         const slots = this.state.availableAppointmentSlots;
-        console.log("slots: ", slots);
+        // console.log("slots: ", slots);
         return slots.map(slot => {
           const {start, end} = slot;
           const appointmentDateString = moment(this.state.appointmentDate).format("YYYY-DD-MM");
           const time1 = moment(start);
-          console.log("time1: ", moment(time1, "hh:mm").format("hh:mm"));
+          // console.log("time1: ", moment(time1, "hh:mm").format("hh:mm"));
             // .hour(9)
             // .minute(0)
             // .add(slot, "hours");
           const time2 = moment(end);
-          console.log("time2: ", moment(time2, "hh:mm").format("hh:mm"));
+          // console.log("time2: ", moment(time2, "hh:mm").format("hh:mm"));
             // .hour(9)
             // .minute(0)
             // .add(slot + 1, "hours");
@@ -266,7 +269,7 @@ class AppointmentApp extends Component {
           return (
             <RadioButton
               label={time1.format("hh:mm a") + " - " + time2.format("hh:mm a")}
-              key={slot}
+              key={slot._id}
               value={slot}
               style={{
                 marginBottom: 15,
@@ -276,37 +279,37 @@ class AppointmentApp extends Component {
           );
         });
       }
-      console.log("rendering appt. times BEFORE DATE SELECTION");
-      const slots = [...Array(8).keys()];
-      return slots.map(slot => {
-        const appointmentDateString = moment(this.state.appointmentDate).format(
-          "YYYY-DD-MM"
-        );
-        const time1 = moment()
-          .hour(9)
-          .minute(0)
-          .add(slot, "hours");
-        const time2 = moment()
-          .hour(9)
-          .minute(0)
-          .add(slot + 1, "hours");
-        const scheduleDisabled = this.state.schedule[appointmentDateString]
-          ? this.state.schedule[
-              moment(this.state.appointmentDate).format("YYYY-DD-MM")
-            ][slot]
-          : false;
-        return (
-          <RadioButton
-            label={time1.format("h:mm a") + " - " + time2.format("h:mm a")}
-            key={slot}
-            value={slot}
-            style={{
-              marginBottom: 15,
-            }}
-            disabled={scheduleDisabled}
-          />
-        );
-      });
+      // console.log("rendering appt. times BEFORE DATE SELECTION");
+      // const slots = [...Array(8).keys()];
+      // return slots.map(slot => {
+      //   const appointmentDateString = moment(this.state.appointmentDate).format(
+      //     "YYYY-DD-MM"
+      //   );
+      //   const time1 = moment()
+      //     .hour(9)
+      //     .minute(0)
+      //     .add(slot, "hours");
+      //   const time2 = moment()
+      //     .hour(9)
+      //     .minute(0)
+      //     .add(slot + 1, "hours");
+      //   const scheduleDisabled = this.state.schedule[appointmentDateString]
+      //     ? this.state.schedule[
+      //         moment(this.state.appointmentDate).format("YYYY-DD-MM")
+      //       ][slot]
+      //     : false;
+      //   return (
+      //     <RadioButton
+      //       label={time1.format("h:mm a") + " - " + time2.format("h:mm a")}
+      //       key={slot}
+      //       value={slot}
+      //       style={{
+      //         marginBottom: 15,
+      //       }}
+      //       disabled={scheduleDisabled}
+      //     />
+      //   );
+      // });
     } else {
       return null;
     }
@@ -324,7 +327,8 @@ class AppointmentApp extends Component {
       data.firstName &&
       data.lastName &&
       data.phone &&
-      data.validPhone){
+      data.validPhone &&
+      data.appointmentTitle){
       return true;
     }
     return false;
@@ -461,13 +465,13 @@ class AppointmentApp extends Component {
                   reminder
                 </StepLabel>
                 <StepContent>
-                  <p>
+                  <div>
                     <section>
                       <TextField
                         style={{ display: "block" }}
                         name="first_name"
                         hintText="First Name"
-                        value={data.firstName}
+                        value={this.state.firstName}
                         floatingLabelText="First Name"
                         onChange={(evt, newValue) =>
                           this.setState({ firstName: newValue })
@@ -478,9 +482,19 @@ class AppointmentApp extends Component {
                         name="last_name"
                         hintText="Last Name"
                         floatingLabelText="Last Name"
-                        value={data.lastName}
+                        value={this.state.lastName}
                         onChange={(evt, newValue) =>
                           this.setState({ lastName: newValue })
+                        }
+                      />
+                      <TextField
+                        style={{ display: "block" }}
+                        name="appointment_title"
+                        hintText='"Temple Recommend Interview"'
+                        floatingLabelText="Type of Appointment"
+                        value={this.state.appointmentTitle}
+                        onChange={(evt, newValue) =>
+                          this.setState({ appointmentTitle: newValue })
                         }
                       />
                       <TextField
@@ -488,7 +502,7 @@ class AppointmentApp extends Component {
                         name="phone"
                         hintText="1234567890"
                         floatingLabelText="Phone"
-                        value={data.phone}
+                        value={this.state.phone}
                         errorText={
                           data.validPhone ? null : "Enter a valid phone number"
                         }
@@ -497,7 +511,7 @@ class AppointmentApp extends Component {
                         }
                       />
                     </section>
-                  </p>
+                  </div>
                   {this.renderStepActions(2)}
                 </StepContent>
               </Step>
@@ -528,6 +542,7 @@ class AppointmentApp extends Component {
                 confirmationModalOpen: false,
                 appointmentDateSelected: false,
                 appointmentSlot: null,
+                appointmentTitle: "",
                 appointmentMeridiem: 0,
                 validPhone: true,
                 finished: false,
