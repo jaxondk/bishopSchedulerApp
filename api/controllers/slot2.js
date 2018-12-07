@@ -24,15 +24,6 @@ const slot2Controller = {
     })
   },
   updateById (req, res) {
-  //   const id = req.params.slotId
-  //   const update = req.body;
-  //   Slot2.findByIdAndUpdate(id, update, { new: true }, (err, slotToUpdate) => {
-  //     if (err) return res.status(500).send(err);
-  //     return res.send(slotToUpdate);
-  //   });
-  // }
-  // console.log("req.params.slotId", req.params.slotId);
-  // console.log("req.body", req.body);
     Slot2.findByIdAndUpdate(
     // the id of the item to find
     req.params.slotId,
@@ -49,10 +40,7 @@ const slot2Controller = {
     (err, updatedSlot) => {
     // Handle any possible database errors
         if (err) return res.status(500).send(err);
-        (err, updatedSlot) => {
-          console.log("updatedSlot: ", updatedSlot);
-          return res.send(updatedSlot);
-        }
+          return res.json(updatedSlot);
      });
   }
 

@@ -8,8 +8,8 @@ const slot2Schema = new Schema ({
   end: Date,
   appointment: {
     title: String,
-    name: String,
     phone: Number,
+    name: String,
   }
 });
 

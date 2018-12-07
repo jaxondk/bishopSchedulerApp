@@ -25,23 +25,36 @@ class AppointmentApp extends Component {
   constructor(props, context) {
     super(props, context);
 
-    this.state = {
-      firstName: "",
-      lastName: "",
-      phone: "",
-      schedule: [],
-      appointmentDate: "",
-      confirmationModalOpen: false,
+    this.state = this.getDefaultState();
+    // console.log("this.state: ", this.state);
+  }
+
+  getDefaultState(){
+    // const defaultState = {
+    return {
+      appointmentDate: "", 
       appointmentDateSelected: false,
       appointmentSlot: null,
       appointmentTitle: "",
-      // appointmentMeridiem: 0,
-      validPhone: true,
+      availableAppointmentSlots: [],
+      confirmationModalOpen: false,
+      confirmationSnackbarMessage: "",
+      confirmationSnackbarOpen: false,
+      confirmationTextVisible: false,
       finished: false,
-      smallScreen: window.innerWidth < 768,
-      stepIndex: 0
+      firstName: "",
+      lastName: "",
+      openSlots: [],
+      phone: "",
+      processed: false,
+      schedule: [],
+      smallScreen: false,
+      stepIndex: 0,
+      validPhone: true,
     };
+    // return defaultState;
   }
+
   componentWillMount() {
     axios.get(API_BASE + `slots`).then(response => {
       console.log("response via db: ", response.data);
@@ -53,8 +66,19 @@ class AppointmentApp extends Component {
     const dateString = moment(date, "YYYY-MM-DD").format("YYYY-MM-DD");
     const openSlots = this.state.openSlots
     if(openSlots[dateString]){
-      this.setState({availableAppointmentSlots: openSlots[dateString]});
-      console.log("relevant slots:", openSlots[dateString]);
+      //need to order time slots..
+      const relevantSlots = openSlots[dateString];
+      function compare(a,b) {
+        if (a.start < b.start)
+          return -1;
+        if (a.start > b.start)
+          return 1;
+        return 0;
+      }
+      relevantSlots.sort(compare);
+
+      this.setState({availableAppointmentSlots: relevantSlots});
+      console.log("relevant slots:", relevantSlots);
     }
     this.setState({ appointmentDate: date, confirmationTextVisible: true, appointmentDateSelected: true });
   }
@@ -66,29 +90,33 @@ class AppointmentApp extends Component {
     this.setState({ appointmentMeridiem: meridiem });
   }
   handleSubmit() {
-    this.setState({ confirmationModalOpen: false });
     const newAppointment = {
       name: this.state.firstName + " " + this.state.lastName,
       phone: this.state.phone,
       title: this.state.appointmentTitle
     };
+    // this.setState({ confirmationModalOpen: false });
     axios
       .put(API_BASE + "slots/"+ this.state.appointmentSlot._id, newAppointment) // Instead, use slot2controller's update with appt call
       .then(response =>
-        this.setState({
+        {
+          console.log("appointment successfully added to DB!");
+          this.setState({
           confirmationSnackbarMessage: "Appointment succesfully added!",
           confirmationSnackbarOpen: true,
-          processed: true
-        })
+          processed: true    
+        });        
+        this.setState({ confirmationModalOpen: false });
+        this.renderSuccessDialog();}
       )
       .catch(err => {
         console.log(err);
+        console.log("appointment failed to save");
         return this.setState({
           confirmationSnackbarMessage: "Appointment failed to save.",
           confirmationSnackbarOpen: true
         });
       });
-    this.renderSuccessDialog();
   }
   
   handleNext = () => {
@@ -137,41 +165,11 @@ class AppointmentApp extends Component {
         openSlots[dateString].push(slot);
       }
     });
-    console.log("openSlots: ", openSlots);
+    console.log("openSlots by date: ", openSlots);
 
     this.setState({
       openSlots: openSlots
     });
-
-    // const today = moment().startOf("day"); //start of today 12 am
-    // const initialSchedule = {};
-    // initialSchedule[today.format("YYYY-DD-MM")] = true;
-    // const schedule = !appointments.length
-    //   ? initialSchedule
-    //   : appointments.reduce((currentSchedule, appointment) => {
-    //       const { slot_date, slot_time } = appointment;
-    //       const dateString = moment(slot_date, "YYYY-DD-MM").format(
-    //         "YYYY-DD-MM"
-    //       );
-    //       if(!currentSchedule[slot_date]) {
-    //         currentSchedule[dateString] = Array(8).fill(false);
-    //       }
-    //       if(Array.isArray(currentSchedule[dateString])) {
-    //         currentSchedule[dateString][slot_time] = true;
-    //       }
-    //       return currentSchedule;
-    //     }, initialSchedule);
-
-    // for (let day in schedule) {
-    //   let slots = schedule[day];
-    //   if(slots.length && slots.every(slot => slot === true)) {
-    //     schedule[day] = true;
-    //   }
-    // }
-
-    // this.setState({
-    //   schedule: schedule
-    // });
   }
   renderAppointmentConfirmation() {
     const spanStyle = { color: "#00C853" };
@@ -243,24 +241,13 @@ class AppointmentApp extends Component {
 
   renderAppointmentTimes() {
     if (!this.state.isLoading) {
-      // console.log("state: ", this.state);
       if(this.state.availableAppointmentSlots){
-        // console.log("rendering appt. times AFTER DATE SELECTION");
         const slots = this.state.availableAppointmentSlots;
-        // console.log("slots: ", slots);
         return slots.map(slot => {
           const {start, end} = slot;
           const appointmentDateString = moment(this.state.appointmentDate).format("YYYY-DD-MM");
           const time1 = moment(start);
-          // console.log("time1: ", moment(time1, "hh:mm").format("hh:mm"));
-            // .hour(9)
-            // .minute(0)
-            // .add(slot, "hours");
           const time2 = moment(end);
-          // console.log("time2: ", moment(time2, "hh:mm").format("hh:mm"));
-            // .hour(9)
-            // .minute(0)
-            // .add(slot + 1, "hours");
           const scheduleDisabled = this.state.schedule[appointmentDateString]
             ? this.state.schedule[
                 moment(this.state.appointmentDate).format("YYYY-DD-MM")
@@ -279,44 +266,12 @@ class AppointmentApp extends Component {
           );
         });
       }
-      // console.log("rendering appt. times BEFORE DATE SELECTION");
-      // const slots = [...Array(8).keys()];
-      // return slots.map(slot => {
-      //   const appointmentDateString = moment(this.state.appointmentDate).format(
-      //     "YYYY-DD-MM"
-      //   );
-      //   const time1 = moment()
-      //     .hour(9)
-      //     .minute(0)
-      //     .add(slot, "hours");
-      //   const time2 = moment()
-      //     .hour(9)
-      //     .minute(0)
-      //     .add(slot + 1, "hours");
-      //   const scheduleDisabled = this.state.schedule[appointmentDateString]
-      //     ? this.state.schedule[
-      //         moment(this.state.appointmentDate).format("YYYY-DD-MM")
-      //       ][slot]
-      //     : false;
-      //   return (
-      //     <RadioButton
-      //       label={time1.format("h:mm a") + " - " + time2.format("h:mm a")}
-      //       key={slot}
-      //       value={slot}
-      //       style={{
-      //         marginBottom: 15,
-      //       }}
-      //       disabled={scheduleDisabled}
-      //     />
-      //   );
-      // });
     } else {
       return null;
     }
   }
 
   formIsFilled(stepIndex, data) {
-    // console.log(stepIndex);
     if(stepIndex===0 && data.appointmentDateSelected){
       return true;
     }
@@ -353,7 +308,7 @@ class AppointmentApp extends Component {
               }) 
             : this.handleNext
           }
-          disabled={!this.formIsFilled(stepIndex, data)}//(finished === true && !contactFormFilled) || data.processed}
+          disabled={!this.formIsFilled(stepIndex, data)}
           backgroundColor="#00C853 !important"
           style={{ marginRight: 12, backgroundColor: "#00C853" }}
         />
@@ -531,24 +486,32 @@ class AppointmentApp extends Component {
             actions={
             <FlatButton
               label="OK"
-              primary={false}
-              onClick={() => this.setState({ 
-                confirmationSnackbarOpen: false,
-                firstName: "",
-                lastName: "",
-                appointmentDate: "",
-                phone: "",
-                schedule: [],
-                confirmationModalOpen: false,
-                appointmentDateSelected: false,
-                appointmentSlot: null,
-                appointmentTitle: "",
-                appointmentMeridiem: 0,
-                validPhone: true,
-                finished: false,
-                smallScreen: window.innerWidth < 768,
-                stepIndex: 0
-              })}
+              primary={true}
+              onClick={() => {
+                this.setState({
+                  appointmentDate: "", 
+                  appointmentDateSelected: false,
+                  appointmentSlot: null,
+                  appointmentTitle: "",
+                  availableAppointmentSlots: [],
+                  confirmationModalOpen: false,
+                  confirmationSnackbarMessage: "",
+                  confirmationSnackbarOpen: false,
+                  confirmationTextVisible: false,
+                  finished: false,
+                  firstName: "",
+                  lastName: "",
+                  openSlots: [],
+                  phone: "",
+                  processed: false,
+                  schedule: [],
+                  smallScreen: false,
+                  stepIndex: 0,
+                  validPhone: true,
+                });
+                this.componentWillMount();
+              }
+            }
             />
             }
             title="Appointment Scheduled!"
