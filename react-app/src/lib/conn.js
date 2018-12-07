@@ -1,4 +1,5 @@
 import axios from "axios";
+import moment from 'moment';
 
 const API_BASE = "http://localhost:8083/api/";
 
@@ -6,7 +7,12 @@ const conn = {
   getSlots: function (cb) {
     axios.get(API_BASE + `slots`).then(response => {
       console.log("response via db: ", response.data);
-      cb(response.data);
+      const dataAsDates = response.data.map((slot) => {
+        slot.start = moment(slot.start)._d;
+        slot.end = moment(slot.end)._d;
+        return slot;
+      })
+      cb(dataAsDates);
     }).catch((err) => console.log('err retrieving slots', err));
   },
 

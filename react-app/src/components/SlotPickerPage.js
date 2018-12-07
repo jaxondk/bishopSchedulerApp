@@ -34,7 +34,7 @@ class SlotPickerPage extends Component {
   }
 
   componentDidMount() {
-    conn.getSlots((data) => this.setState({allSlots: data}))
+    conn.getSlots((data) => this.setState({allSlots: data}));
   }
 
   onSelectEvent(event) {
@@ -95,7 +95,7 @@ class SlotPickerPage extends Component {
             step={this.state.apptDuration}
             defaultDate={new Date()}
             defaultView="week"
-            events={this.state.events}
+            events={this.state.allSlots}
             style={{ height: "100vh" }}
             selectable
             onSelectEvent={(event) => this.onSelectEvent(event)}
