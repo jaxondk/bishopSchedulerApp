@@ -5,8 +5,8 @@ import FlatButton from "material-ui/FlatButton";
 import moment from "moment";
 import DatePicker from "material-ui/DatePicker";
 import Dialog from "material-ui/Dialog";
-import SelectField from "material-ui/SelectField";
-import MenuItem from "material-ui/MenuItem";
+// import SelectField from "material-ui/SelectField";
+// import MenuItem from "material-ui/MenuItem";
 import TextField from "material-ui/TextField";
 // import SnackBar from "material-ui/Snackbar";
 import Card from "material-ui/Card";
@@ -48,6 +48,12 @@ class AppointmentApp extends Component {
     .catch((err) => console.log('err retrieving slots', err));
   }
   handleSetAppointmentDate(date) {
+    const dateString = moment(date, "YYYY-MM-DD").format("YYYY-MM-DD");
+    const openSlots = this.state.openSlots
+    if(openSlots[dateString]){
+      this.setState({availableAppointmentSlots: openSlots[dateString]});
+      console.log("relevant slots:", openSlots[dateString]);
+    }
     this.setState({ appointmentDate: date, confirmationTextVisible: true, appointmentDateSelected: true });
   }
 
@@ -117,35 +123,54 @@ class AppointmentApp extends Component {
   
   handleDBReponse(response) {
     const appointments = response;
-    const today = moment().startOf("day"); //start of today 12 am
-    const initialSchedule = {};
-    initialSchedule[today.format("YYYY-DD-MM")] = true;
-    const schedule = !appointments.length
-      ? initialSchedule
-      : appointments.reduce((currentSchedule, appointment) => {
-          const { slot_date, slot_time } = appointment;
-          const dateString = moment(slot_date, "YYYY-DD-MM").format(
-            "YYYY-DD-MM"
-          );
-          if(!currentSchedule[slot_date]) {
-            currentSchedule[dateString] = Array(8).fill(false);
-          }
-          if(Array.isArray(currentSchedule[dateString])) {
-            currentSchedule[dateString][slot_time] = true;
-          }
-          return currentSchedule;
-        }, initialSchedule);
-
-    for (let day in schedule) {
-      let slots = schedule[day];
-      if(slots.length && slots.every(slot => slot === true)) {
-        schedule[day] = true;
+    const openSlots = {};
+    response.forEach(function(slot){  
+      const {start, appointment} = slot;
+      const dateString = moment(start, "YYYY-DD-MM").format(
+        "YYYY-DD-MM"
+      );
+      if(!appointment){
+        if(!openSlots[dateString]){
+          openSlots[dateString] = [];
+        }
+        openSlots[dateString].push(slot);
       }
-    }
+    });
+    console.log("openSlots: ", openSlots);
 
     this.setState({
-      schedule: schedule
+      openSlots: openSlots
     });
+
+    // const today = moment().startOf("day"); //start of today 12 am
+    // const initialSchedule = {};
+    // initialSchedule[today.format("YYYY-DD-MM")] = true;
+    // const schedule = !appointments.length
+    //   ? initialSchedule
+    //   : appointments.reduce((currentSchedule, appointment) => {
+    //       const { slot_date, slot_time } = appointment;
+    //       const dateString = moment(slot_date, "YYYY-DD-MM").format(
+    //         "YYYY-DD-MM"
+    //       );
+    //       if(!currentSchedule[slot_date]) {
+    //         currentSchedule[dateString] = Array(8).fill(false);
+    //       }
+    //       if(Array.isArray(currentSchedule[dateString])) {
+    //         currentSchedule[dateString][slot_time] = true;
+    //       }
+    //       return currentSchedule;
+    //     }, initialSchedule);
+
+    // for (let day in schedule) {
+    //   let slots = schedule[day];
+    //   if(slots.length && slots.every(slot => slot === true)) {
+    //     schedule[day] = true;
+    //   }
+    // }
+
+    // this.setState({
+    //   schedule: schedule
+    // });
   }
   renderAppointmentConfirmation() {
     const spanStyle = { color: "#00C853" };
@@ -215,6 +240,43 @@ class AppointmentApp extends Component {
 
   renderAppointmentTimes() {
     if (!this.state.isLoading) {
+      console.log("state: ", this.state);
+      if(this.state.availableAppointmentSlots){
+        console.log("rendering appt. times AFTER DATE SELECTION");
+        const slots = this.state.availableAppointmentSlots;
+        console.log("slots: ", slots);
+        return slots.map(slot => {
+          const {start, end} = slot;
+          const appointmentDateString = moment(this.state.appointmentDate).format("YYYY-DD-MM");
+          const time1 = moment(start);
+          console.log("time1: ", moment(time1, "hh:mm").format("hh:mm"));
+            // .hour(9)
+            // .minute(0)
+            // .add(slot, "hours");
+          const time2 = moment(end);
+          console.log("time2: ", moment(time2, "hh:mm").format("hh:mm"));
+            // .hour(9)
+            // .minute(0)
+            // .add(slot + 1, "hours");
+          const scheduleDisabled = this.state.schedule[appointmentDateString]
+            ? this.state.schedule[
+                moment(this.state.appointmentDate).format("YYYY-DD-MM")
+              ][slot]
+            : false;
+          return (
+            <RadioButton
+              label={time1.format("hh:mm a") + " - " + time2.format("hh:mm a")}
+              key={slot}
+              value={slot}
+              style={{
+                marginBottom: 15,
+              }}
+              disabled={scheduleDisabled}
+            />
+          );
+        });
+      }
+      console.log("rendering appt. times BEFORE DATE SELECTION");
       const slots = [...Array(8).keys()];
       return slots.map(slot => {
         const appointmentDateString = moment(this.state.appointmentDate).format(
