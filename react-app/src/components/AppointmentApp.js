@@ -19,7 +19,7 @@ import {
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8083/";
+const API_BASE = "http://localhost:8083/api/";
 
 class AppointmentApp extends Component {
   constructor(props, context) {
@@ -41,7 +41,7 @@ class AppointmentApp extends Component {
     };
   }
   componentWillMount() {
-    axios.get(API_BASE + `api/slots2`).then(response => {
+    axios.get(API_BASE + `slots`).then(response => {
       console.log("response via db: ", response.data);
       this.handleDBReponse(response.data);
     })
@@ -72,7 +72,7 @@ class AppointmentApp extends Component {
       slot_time: this.state.appointmentSlot
     };
     axios
-      .post(API_BASE + "api/appointmentCreate", newAppointment) // Instead, use slot2controller's update with appt call
+      .post(API_BASE + "appointmentCreate", newAppointment) // Instead, use slot2controller's update with appt call
       .then(response =>
         this.setState({
           confirmationSnackbarMessage: "Appointment succesfully added!",

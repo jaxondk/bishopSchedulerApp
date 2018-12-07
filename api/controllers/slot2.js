@@ -20,10 +20,17 @@ const slot2Controller = {
       //after a successful save
       Slot2
         .findOne({ _id: saved._id })
-        .exec((err, Slot2) => res.json(Slot2));
+        .exec((err, savedSlot) => res.json(savedSlot));
     })
   },
-  //TODO - update slot with an appt.
+  updateById (req, res) {
+    const id = req.params.slotId
+    const update = req.body;
+    Slot2.findByIdAndUpdate(id, update, { new: true }, (err, slotToUpdate) => {
+      if (err) return res.status(500).send(err);
+      return res.send(slotToUpdate);
+    });
+  }
 
   //TODO
   // findByDate (req, res) { 
