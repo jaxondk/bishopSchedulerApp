@@ -24,13 +24,26 @@ const slot2Controller = {
     })
   },
   updateById (req, res) {
-    const id = req.params.slotId
-    const update = req.body;
-    Slot2.findByIdAndUpdate(id, update, { new: true }, (err, slotToUpdate) => {
-      if (err) return res.status(500).send(err);
-      return res.send(slotToUpdate);
-    });
+    Slot2.findByIdAndUpdate(
+    // the id of the item to find
+    req.params.slotId,
+    
+    // the change to be made. Mongoose will smartly combine your existing 
+    // document with this change, which allows for partial updates too
+    {appointment: req.body},
+    
+    // an option that asks mongoose to return the updated version 
+    // of the document instead of the pre-updated one.
+    {new: true},
+    
+    // the callback function
+    (err, updatedSlot) => {
+    // Handle any possible database errors
+        if (err) return res.status(500).send(err);
+          return res.json(updatedSlot);
+     });
   }
+
 
   //TODO
   // findByDate (req, res) { 
