@@ -1,11 +1,14 @@
 const Model = require('../models/index');
 const Slot2 = Model.Slot2;
 
+const getAll = (res) => Slot2.find((err, slots) => {
+  if (err) return res.status(500).send(err);
+  return res.status(200).send(slots);
+});
+
 const slot2Controller = {
   all (req, res) {
-    // Returns all Slots
-    Slot2.find({})
-      .exec((err, slots) => res.json(slots))
+    getAll(res);
   },
   create (req, res) {
     var body = req.body;
@@ -17,15 +20,23 @@ const slot2Controller = {
       appointment: body.appointment
     });
     newSlot.save((err, saved) => {
-      //Returns the new Slot2
-      //after a successful save
+      //Returns the new Slot2 after a successful save
       Slot2
         .findOne({ _id: saved._id })
         .exec((err, savedSlot) => res.json(savedSlot));
     })
   },
+  // Returns all slots after deletion
+  delete (req, res) {
+    const id = req.params.slotId;
+    console.log('id from controller', id)
+    Slot2.findByIdAndRemove(id, (err) => {
+      if (err) {console.log('err here', err); return res.status(500).send(err);}
+      getAll(res);
+    });
+  },
   updateById (req, res) {
-    const id = req.params.slotId
+    const id = req.params.slotId;
     const update = req.body;
     Slot2.findByIdAndUpdate(id, update, { new: true }, (err, slotToUpdate) => {
       if (err) return res.status(500).send(err);

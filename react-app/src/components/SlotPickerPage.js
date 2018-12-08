@@ -23,7 +23,7 @@ const styles = {
   },
   emptySlot: {
     padding: '2px 5px',
-    backgroundColor: 'lightgrey', //'#3174ad',
+    backgroundColor: 'lightgrey',
     borderRadius: '5px',
     color: 'black',
     cursor: 'pointer',
@@ -34,7 +34,6 @@ class SlotPickerPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      events: [],
       allSlots: [],
       apptDuration: 60 //in minutes
     };
@@ -44,16 +43,11 @@ class SlotPickerPage extends Component {
     conn.getSlots((data) => this.setState({allSlots: data}));
   }
 
-  onSelectEvent(event) {
+  onSelectEvent(slot) {
     const remove = window.confirm("Would you like to remove this time slot?")
     if(remove) {
       //TODO - send text to member letting them know about cancelation
-      this.setState((prevState, props) => {
-        const events = [...prevState.events]
-        const idx = events.indexOf(event)
-        events.splice(idx, 1);
-        return { events };
-      });
+      conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));
     }
   }
 
@@ -76,7 +70,6 @@ class SlotPickerPage extends Component {
   }
 
   eventStyleGetter (slot) {
-    console.log('slot:', slot)
     let style = JSON.parse(JSON.stringify(styles.emptySlot));
 
     if (slot.appointment) {

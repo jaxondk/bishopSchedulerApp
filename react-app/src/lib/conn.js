@@ -12,7 +12,7 @@ const slotStringsToDates = (slot) => {
 
 const conn = {
   getSlots: function (cb) {
-    axios.get(API_BASE + `slots`).then(response => {
+    axios.get(API_BASE + 'slots').then(response => {
       console.log("response via db: ", response.data);
       const dataAsDates = response.data.map((slot) => {
         return slotStringsToDates(slot);
@@ -27,6 +27,14 @@ const conn = {
       cb(slotStringsToDates(response.data));
     }).catch((err) => console.log('err creating slot', err));
   },
+
+  deleteSlot: function (id, cb) {
+    axios.delete(API_BASE + 'slots/' + id).then(response => {
+      console.log("response via db: ", response.data);
+      const slotsAfterDelete = response.data.map((slot) => (slotStringsToDates(slot)));
+      cb(slotStringsToDates(slotsAfterDelete));
+    }).catch((err) => console.log('err deleting slot', err));
+  }
 }
 
 export default conn;
