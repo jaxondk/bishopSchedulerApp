@@ -6,8 +6,8 @@ const Schema = mongoose.Schema,
 const slot2Schema = new Schema ({
   start: Date,
   end: Date,
+  title: String,
   appointment: {
-    title: String,
     name: String,
     phone: Number,
   }

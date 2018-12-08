@@ -13,6 +13,7 @@ const slot2Controller = {
     var newSlot = new Slot2({
       start: body.start,
       end: body.end,
+      title: body.title,
       appointment: body.appointment
     });
     newSlot.save((err, saved) => {

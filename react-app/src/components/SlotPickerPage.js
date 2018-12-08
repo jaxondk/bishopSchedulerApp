@@ -67,9 +67,23 @@ class SlotPickerPage extends Component {
     }
   }
 
-  eventStyleGetter() {
-    //TODO
-  }
+  eventStyleGetter (slot) {
+    let newStyle = {
+      backgroundColor: "lightgrey",
+      color: 'black',
+      borderRadius: "0px",
+      border: "none"
+    };
+
+    if (slot.appointment) {
+      newStyle.backgroundColor = "lightgreen"
+    }
+
+    return {
+      className: "",
+      style: newStyle
+    };
+}
 
   render () {
     console.log('all slots', this.state.allSlots);
@@ -101,6 +115,7 @@ class SlotPickerPage extends Component {
             selectable
             onSelectEvent={(event) => this.onSelectEvent(event)}
             onSelectSlot={this.handleSelect}
+            eventPropGetter={this.eventStyleGetter}
             min={moment("8:00 AM", "H:mm a")._d}
             max={moment("6:00 PM", "H:mm a")._d}
           />
