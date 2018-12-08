@@ -20,7 +20,14 @@ const styles = {
   calendarContainer: {
     flex: 1,
     marginTop: 10,
-  }
+  },
+  emptySlot: {
+    padding: '2px 5px',
+    backgroundColor: 'lightgrey', //'#3174ad',
+    borderRadius: '5px',
+    color: 'black',
+    cursor: 'pointer',
+  },
 }
 
 class SlotPickerPage extends Component {
@@ -60,6 +67,7 @@ class SlotPickerPage extends Component {
           const new_slot = {
             start: start_moment._d,
             end: times[i+1]._d,
+            title: 'Available',
           };
           conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
         }
@@ -68,20 +76,18 @@ class SlotPickerPage extends Component {
   }
 
   eventStyleGetter (slot) {
-    let newStyle = {
-      backgroundColor: "lightgrey",
-      color: 'black',
-      borderRadius: "0px",
-      border: "none"
-    };
+    console.log('slot:', slot)
+    let style = JSON.parse(JSON.stringify(styles.emptySlot));
 
     if (slot.appointment) {
-      newStyle.backgroundColor = "lightgreen"
+      style.backgroundColor = "lightgreen";
+      style.borderColor = 'green';
+      style.borderLeft = '6px solid green';
     }
 
     return {
       className: "",
-      style: newStyle
+      style: style
     };
 }
 
