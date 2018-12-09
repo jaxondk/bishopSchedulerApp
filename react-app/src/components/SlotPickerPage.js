@@ -28,13 +28,15 @@ const styles = {
     cursor: 'pointer',
   },
 }
+const DEFAULT_VIEW = 'week';
 
 class SlotPickerPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
       allSlots: [],
-      apptDuration: 60 //in minutes
+      apptDuration: 60, //in minutes
+      view: DEFAULT_VIEW,
     };
   }
 
@@ -46,7 +48,6 @@ class SlotPickerPage extends Component {
     const prompt = (slot.appointment) ? 'Would you like to cancel this appointment?' : 'Would you like to remove this time slot?';
     const remove = window.confirm(prompt)
     if(remove) {
-      //TODO - send text to member letting them know about cancelation
       if(slot.appointment) {
         const firstName = slot.appointment.name.split(' ')[0];
         const body = {
@@ -117,10 +118,11 @@ class SlotPickerPage extends Component {
             localizer={localizer}
             step={this.state.apptDuration}
             defaultDate={new Date()}
-            defaultView="week"
+            defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}
             style={{ height: "100vh" }}
-            selectable
+            selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
+            onView={(view) => this.setState({view: view})}
             onSelectEvent={(event) => this.onSelectEvent(event)}
             onSelectSlot={this.handleSelect}
             eventPropGetter={this.eventStyleGetter}
