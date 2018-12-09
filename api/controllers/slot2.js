@@ -38,9 +38,9 @@ const slot2Controller = {
   updateById (req, res) {
     const id = req.params.slotId;
     const update = req.body;
-    Slot2.findByIdAndUpdate(id, update, { new: true }, (err, slotToUpdate) => {
+    Slot2.findByIdAndUpdate(id, update, { new: true }, (err, updatedSlot) => {
       if (err) return res.status(500).send(err);
-      return res.send(slotToUpdate);
+      return res.send(updatedSlot);
     });
   }
 

@@ -12,9 +12,9 @@ const slotStringsToDates = (slot) => {
 
 const conn = {
   getSlots: function (cb) {
-    axios.get(API_BASE + 'slots').then(response => {
-      console.log("response via db for GET /slots: ", response.data);
-      const dataAsDates = response.data.map((slot) => {
+    axios.get(API_BASE + 'slots').then(res => {
+      console.log("response via db for GET /slots: ", res.data);
+      const dataAsDates = res.data.map((slot) => {
         return slotStringsToDates(slot);
       })
       cb(dataAsDates);
@@ -22,23 +22,30 @@ const conn = {
   },
 
   createSlot: function (slot, cb) {
-    axios.post(API_BASE + 'slots', slot).then(response => {
-      console.log("response via db for POST /slots: ", response.data);
-      cb(slotStringsToDates(response.data));
+    axios.post(API_BASE + 'slots', slot).then(res => {
+      console.log("response via db for POST /slots: ", res.data);
+      cb(slotStringsToDates(res.data));
     }).catch((err) => console.log('err creating slot', err));
   },
 
+  updateSlot: function (id, slot, cb) {
+    axios.put(API_BASE + 'slots/' + id, slot).then(res => {
+      console.log("response via db for PUT /slots/:id ", res.data);
+      cb(slotStringsToDates(res.data));
+    }).catch((err) => console.log('err deleting slot', err));
+  },
+
   deleteSlot: function (id, cb) {
-    axios.delete(API_BASE + 'slots/' + id).then(response => {
-      console.log("response via db for DELETE /slots/:id ", response.data);
-      const slotsAfterDelete = response.data.map((slot) => (slotStringsToDates(slot)));
+    axios.delete(API_BASE + 'slots/' + id).then(res => {
+      console.log("response via db for DELETE /slots/:id ", res.data);
+      const slotsAfterDelete = res.data.map((slot) => (slotStringsToDates(slot)));
       cb(slotStringsToDates(slotsAfterDelete));
     }).catch((err) => console.log('err deleting slot', err));
   },
 
   sendText: function (body) {
-    axios.post(API_BASE + 'sms', body).then(response => {
-      console.log("response via db for POST /sms: ", response.data);
+    axios.post(API_BASE + 'sms', body).then(res => {
+      console.log("response via db for POST /sms: ", res.data);
     }).catch((err) => console.log('err sending sms', err));
   }
 }

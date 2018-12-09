@@ -52,7 +52,7 @@ class SlotPickerPage extends Component {
         const firstName = slot.appointment.name.split(' ')[0];
         const body = {
           to: slot.appointment.phone,
-          msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n <3 Your favorite executive secretary <3`,
+          msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
         }
         conn.sendText(body);
       }
@@ -61,7 +61,7 @@ class SlotPickerPage extends Component {
     }
   }
 
-  handleSelect = ({ start, end }) => {
+  handleSelectCell = ({ start, end }) => {
     const create = window.confirm('Create new available time slots from this range?')
     if (create) {
       const range = moment.range(start, end);
@@ -124,7 +124,7 @@ class SlotPickerPage extends Component {
             selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
             onView={(view) => this.setState({view: view})}
             onSelectEvent={(event) => this.onSelectEvent(event)}
-            onSelectSlot={this.handleSelect}
+            onSelectSlot={this.handleSelectCell}
             eventPropGetter={this.eventStyleGetter}
             min={moment("8:00 AM", "H:mm a")._d}
             max={moment("6:00 PM", "H:mm a")._d}
