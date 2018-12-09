@@ -43,7 +43,8 @@ class SlotPickerPage extends Component {
   }
 
   onSelectEvent(slot) {
-    const remove = window.confirm("Would you like to remove this time slot?")
+    const prompt = (slot.appointment) ? 'Would you like to cancel this appointment?' : 'Would you like to remove this time slot?';
+    const remove = window.confirm(prompt)
     if(remove) {
       //TODO - send text to member letting them know about cancelation
       if(slot.appointment) {
@@ -52,7 +53,7 @@ class SlotPickerPage extends Component {
           to: slot.appointment.phone,
           msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n <3 Your favorite executive secretary <3`,
         }
-        conn.sendText(body, () => console.log('sendText callback executed'));
+        conn.sendText(body);
       }
       
       conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));

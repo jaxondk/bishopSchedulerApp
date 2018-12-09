@@ -36,10 +36,9 @@ const conn = {
     }).catch((err) => console.log('err deleting slot', err));
   },
 
-  sendText: function (body, cb) {
+  sendText: function (body) {
     axios.post(API_BASE + 'sms', body).then(response => {
       console.log("response via db for POST /sms: ", response.data);
-      cb();
     }).catch((err) => console.log('err sending sms', err));
   }
 }
