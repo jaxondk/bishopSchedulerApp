@@ -44,7 +44,10 @@ class CalendarPage extends Component {
       allSlots: [],
       apptDuration: 60, //in minutes
       view: DEFAULT_VIEW,
-      dialogOpen: false,
+      detailDialogOpen: false,
+      addSlotDialogOpen: false,
+      selectedSlot: null,
+      selectedCell: null,
     };
   }
 
@@ -53,7 +56,8 @@ class CalendarPage extends Component {
   }
 
   onSelectEvent (slot) {
-    this.setState({ dialogOpen: true });
+    this.setState({ selectedSlot: slot });
+    this.setState({ detailDialogOpen: true });
     // const prompt = (slot.appointment) ? 'Would you like to cancel this appointment?' : 'Would you like to remove this time slot?';
     // const remove = window.confirm(prompt)
     // if(remove) {
@@ -68,6 +72,19 @@ class CalendarPage extends Component {
 
     //   conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));
     // }
+  }
+
+  removeSlot (slot) {
+    if (slot.appointment) {
+      const firstName = slot.appointment.name.split(' ')[0];
+      const body = {
+        to: slot.appointment.phone,
+        msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+      }
+      conn.sendText(body);
+    }
+    conn.deleteSlot(slot._id, (slots) => this.setState({ allSlots: slots }));
+    this.setState({ detailDialogOpen: false })
   }
 
   handleSelectCell = ({ start, end }) => {
@@ -104,32 +121,31 @@ class CalendarPage extends Component {
   }
 
   renderDialog () {
-    if(this.state.dialogOpen) {
+    if(this.state.detailDialogOpen) {
       return (
         <div>
           <Dialog
             open
             TransitionComponent={(props) => (<Slide direction="up" {...props} />)}
             keepMounted
-            onClose={() => this.setState({ dialogOpen: false })}
+            onClose={() => this.setState({ detailDialogOpen: false })}
             aria-labelledby="alert-dialog-slide-title"
             aria-describedby="alert-dialog-slide-description"
           >
             <DialogTitle id="alert-dialog-slide-title">
-              {"Title"}
-              {/* {this.state.selectedSlot.title} */}
+              {this.state.selectedSlot.title}
             </DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-slide-description">
-                Content text. Could use this for who appt is with
+                {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => this.setState({ dialogOpen: false })} color="primary">
-                Disagree
+              <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
+                {this.state.selectedSlot.appointment ? 'Cancel Appointment' : 'Remove Timeslot'}
               </Button>
-              <Button onClick={() => this.setState({ dialogOpen: false })} color="primary">
-                Agree
+              <Button onClick={() => this.setState({ detailDialogOpen: false })} color="secondary">
+                Close
               </Button>
             </DialogActions>
           </Dialog>
