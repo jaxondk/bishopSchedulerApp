@@ -1,6 +1,13 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import AppBar from "material-ui/AppBar";
 import BigCalendar from "react-big-calendar";
+import Button from '@material-ui/core/Button';
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Moment from 'moment';
 import { extendMoment } from 'moment-range';
@@ -30,47 +37,49 @@ const styles = {
 }
 const DEFAULT_VIEW = 'week';
 
-class SlotPickerPage extends Component {
+class CalendarPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
       allSlots: [],
       apptDuration: 60, //in minutes
       view: DEFAULT_VIEW,
+      dialogOpen: false,
     };
   }
 
-  componentDidMount() {
-    conn.getSlots((data) => this.setState({allSlots: data}));
+  componentDidMount () {
+    conn.getSlots((data) => this.setState({ allSlots: data }));
   }
 
-  onSelectEvent(slot) {
-    const prompt = (slot.appointment) ? 'Would you like to cancel this appointment?' : 'Would you like to remove this time slot?';
-    const remove = window.confirm(prompt)
-    if(remove) {
-      if(slot.appointment) {
-        const firstName = slot.appointment.name.split(' ')[0];
-        const body = {
-          to: slot.appointment.phone,
-          msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
-        }
-        conn.sendText(body);
-      }
-      
-      conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));
-    }
+  onSelectEvent (slot) {
+    this.setState({ dialogOpen: true });
+    // const prompt = (slot.appointment) ? 'Would you like to cancel this appointment?' : 'Would you like to remove this time slot?';
+    // const remove = window.confirm(prompt)
+    // if(remove) {
+    //   if(slot.appointment) {
+    //     const firstName = slot.appointment.name.split(' ')[0];
+    //     const body = {
+    //       to: slot.appointment.phone,
+    //       msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+    //     }
+    //     conn.sendText(body);
+    //   }
+
+    //   conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));
+    // }
   }
 
   handleSelectCell = ({ start, end }) => {
     const create = window.confirm('Create new available time slots from this range?')
     if (create) {
       const range = moment.range(start, end);
-      var times = Array.from(range.by('minutes', {step: this.state.apptDuration}));
+      var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
       times.forEach((start_moment, i) => {
-        if(i !== times.length - 1) {
+        if (i !== times.length - 1) {
           const new_slot = {
             start: start_moment._d,
-            end: times[i+1]._d,
+            end: times[i + 1]._d,
             title: 'Available',
           };
           conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
@@ -92,7 +101,42 @@ class SlotPickerPage extends Component {
       className: "",
       style: style
     };
-}
+  }
+
+  renderDialog () {
+    if(this.state.dialogOpen) {
+      return (
+        <div>
+          <Dialog
+            open
+            TransitionComponent={(props) => (<Slide direction="up" {...props} />)}
+            keepMounted
+            onClose={() => this.setState({ dialogOpen: false })}
+            aria-labelledby="alert-dialog-slide-title"
+            aria-describedby="alert-dialog-slide-description"
+          >
+            <DialogTitle id="alert-dialog-slide-title">
+              {"Title"}
+              {/* {this.state.selectedSlot.title} */}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-slide-description">
+                Content text. Could use this for who appt is with
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.setState({ dialogOpen: false })} color="primary">
+                Disagree
+              </Button>
+              <Button onClick={() => this.setState({ dialogOpen: false })} color="primary">
+                Agree
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
+      );
+    }
+  }
 
   render () {
     console.log('all slots', this.state.allSlots);
@@ -114,7 +158,7 @@ class SlotPickerPage extends Component {
         /> */}
         <div style={styles.calendarContainer}>
           <BigCalendar
-            views={['day', 'week', 'month','agenda']}
+            views={['day', 'week', 'month', 'agenda']}
             localizer={localizer}
             step={this.state.apptDuration}
             defaultDate={new Date()}
@@ -122,7 +166,7 @@ class SlotPickerPage extends Component {
             events={this.state.allSlots}
             style={{ height: "100vh" }}
             selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
-            onView={(view) => this.setState({view: view})}
+            onView={(view) => this.setState({ view: view })}
             onSelectEvent={(event) => this.onSelectEvent(event)}
             onSelectSlot={this.handleSelectCell}
             eventPropGetter={this.eventStyleGetter}
@@ -130,9 +174,10 @@ class SlotPickerPage extends Component {
             max={moment("6:00 PM", "H:mm a")._d}
           />
         </div>
+        {this.renderDialog()}
       </div>
     );
   }
 }
 
-export default SlotPickerPage;
+export default CalendarPage;
