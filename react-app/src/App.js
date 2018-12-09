@@ -3,14 +3,14 @@ import React, { Component } from "react";
 import AppointmentApp from "./components/AppointmentApp.js";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
-import SlotPickerPage from "./components/SlotPickerPage";
+import CalendarPage from "./components/CalendarPage";
 
 class App extends Component {
-  render() {
+  render () {
     return (
       <div>
         <MuiThemeProvider>
-          <SlotPickerPage/>
+          <CalendarPage />
           {/* <AppointmentApp /> */}
         </MuiThemeProvider>
       </div>

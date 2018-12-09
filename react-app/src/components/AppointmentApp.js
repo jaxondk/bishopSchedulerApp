@@ -17,7 +17,9 @@ import {
   StepContent
 } from "material-ui/Stepper";
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
-import axios from "axios";
+import axios from 'axios';
+import conn from "../lib/conn";
+
 
 const API_BASE = "http://localhost:8083/api/";
 
@@ -56,11 +58,12 @@ class AppointmentApp extends Component {
   }
 
   componentWillMount() {
-    axios.get(API_BASE + `slots`).then(response => {
-      console.log("response via db: ", response.data);
-      this.handleDBReponse(response.data);
-    })
-    .catch((err) => console.log('err retrieving slots', err));
+    conn.getSlots(this.handleDBReponse);
+    // axios.get(API_BASE + `slots`).then(response => {
+    //   console.log("response via db: ", response.data);
+    //   this.handleDBReponse(response.data);
+    // })
+    // .catch((err) => console.log('err retrieving slots', err));
   }
   handleSetAppointmentDate(date) {
     const dateString = moment(date, "YYYY-MM-DD").format("YYYY-MM-DD");

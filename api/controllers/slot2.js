@@ -1,11 +1,14 @@
 const Model = require('../models/index');
 const Slot2 = Model.Slot2;
 
+const getAll = (res) => Slot2.find((err, slots) => {
+  if (err) return res.status(500).send(err);
+  return res.status(200).send(slots);
+});
+
 const slot2Controller = {
   all (req, res) {
-    // Returns all Slots
-    Slot2.find({})
-      .exec((err, slots) => res.json(slots))
+    getAll(res);
   },
   create (req, res) {
     var body = req.body;
@@ -13,37 +16,33 @@ const slot2Controller = {
     var newSlot = new Slot2({
       start: body.start,
       end: body.end,
+      title: body.title,
       appointment: body.appointment
     });
     newSlot.save((err, saved) => {
-      //Returns the new Slot2
-      //after a successful save
+      //Returns the new Slot2 after a successful save
       Slot2
         .findOne({ _id: saved._id })
         .exec((err, savedSlot) => res.json(savedSlot));
     })
   },
+  // Returns all slots after deletion
+  delete (req, res) {
+    const id = req.params.slotId;
+    console.log('id from controller', id)
+    Slot2.findByIdAndRemove(id, (err) => {
+      if (err) {console.log('err here', err); return res.status(500).send(err);}
+      getAll(res);
+    });
+  },
   updateById (req, res) {
-    Slot2.findByIdAndUpdate(
-    // the id of the item to find
-    req.params.slotId,
-    
-    // the change to be made. Mongoose will smartly combine your existing 
-    // document with this change, which allows for partial updates too
-    {appointment: req.body},
-    
-    // an option that asks mongoose to return the updated version 
-    // of the document instead of the pre-updated one.
-    {new: true},
-    
-    // the callback function
-    (err, updatedSlot) => {
-    // Handle any possible database errors
-        if (err) return res.status(500).send(err);
-          return res.json(updatedSlot);
-     });
+    const id = req.params.slotId;
+    const update = req.body;
+    Slot2.findByIdAndUpdate(id, update, { new: true }, (err, updatedSlot) => {
+      if (err) return res.status(500).send(err);
+      return res.send(updatedSlot);
+    });
   }
-
 
   //TODO
   // findByDate (req, res) { 
