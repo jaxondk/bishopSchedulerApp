@@ -4,7 +4,6 @@ import BigCalendar from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Moment from 'moment';
 import { extendMoment } from 'moment-range';
-
 // import InputSlider from 'react-input-slider';
 import conn from '../lib/conn';
 const moment = extendMoment(Moment);
@@ -47,6 +46,15 @@ class SlotPickerPage extends Component {
     const remove = window.confirm("Would you like to remove this time slot?")
     if(remove) {
       //TODO - send text to member letting them know about cancelation
+      if(slot.appointment) {
+        const firstName = slot.appointment.name.split(' ')[0];
+        const body = {
+          to: slot.appointment.phone,
+          msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n <3 Your favorite executive secretary <3`,
+        }
+        conn.sendText(body, () => console.log('sendText callback executed'));
+      }
+      
       conn.deleteSlot(slot._id, (slots) => this.setState({allSlots: slots}));
     }
   }
