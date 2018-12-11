@@ -31,7 +31,7 @@ const slot2Controller = {
     const id = req.params.slotId;
     console.log('id from controller', id)
     Slot2.findByIdAndRemove(id, (err) => {
-      if (err) {console.log('err here', err); return res.status(500).send(err);}
+      if (err) return res.status(500).send(err);
       getAll(res);
     });
   },
@@ -40,7 +40,7 @@ const slot2Controller = {
     const update = req.body;
     Slot2.findByIdAndUpdate(id, update, { new: true }, (err, updatedSlot) => {
       if (err) return res.status(500).send(err);
-      return res.send(updatedSlot);
+      getAll(res);
     });
   }
 
