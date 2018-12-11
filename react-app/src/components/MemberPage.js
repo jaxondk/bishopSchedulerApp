@@ -6,16 +6,11 @@ import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Slide from '@material-ui/core/Slide';
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import Moment from 'moment';
-import { extendMoment } from 'moment-range';
-// import InputSlider from 'react-input-slider';
+import moment from 'moment';
 import { dialogs } from '../constants';
 import conn from '../lib/conn';
-const moment = extendMoment(Moment);
 
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
