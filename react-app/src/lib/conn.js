@@ -10,14 +10,17 @@ const slotStringsToDates = (slot) => {
   return slot
 };
 
+const dataAsDates = (data) => {
+  return data.map((slot) => {
+    return slotStringsToDates(slot);
+  });
+}
+
 const conn = {
   getSlots: function (cb) {
     axios.get(API_BASE + 'slots').then(res => {
       console.log("response via db for GET /slots: ", res.data);
-      const dataAsDates = res.data.map((slot) => {
-        return slotStringsToDates(slot);
-      })
-      cb(dataAsDates);
+      cb(dataAsDates(res.data));
     }).catch((err) => console.log('err retrieving slots', err));
   },
 
@@ -31,15 +34,14 @@ const conn = {
   updateSlot: function (id, slot, cb) {
     axios.put(API_BASE + 'slots/' + id, slot).then(res => {
       console.log("response via db for PUT /slots/:id ", res.data);
-      cb(slotStringsToDates(res.data));
-    }).catch((err) => console.log('err deleting slot', err));
+      cb(dataAsDates(res.data));
+    }).catch((err) => console.log('err updating slot', err));
   },
 
   deleteSlot: function (id, cb) {
     axios.delete(API_BASE + 'slots/' + id).then(res => {
       console.log("response via db for DELETE /slots/:id ", res.data);
-      const slotsAfterDelete = res.data.map((slot) => (slotStringsToDates(slot)));
-      cb(slotStringsToDates(slotsAfterDelete));
+      cb(dataAsDates(res.data));
     }).catch((err) => console.log('err deleting slot', err));
   },
 

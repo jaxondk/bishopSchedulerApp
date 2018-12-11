@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import AppBar from "material-ui/AppBar";
 import BigCalendar from "react-big-calendar";
 import Button from '@material-ui/core/Button';
+import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -12,6 +13,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import Moment from 'moment';
 import { extendMoment } from 'moment-range';
 // import InputSlider from 'react-input-slider';
+import { dialogs } from '../constants';
 import conn from '../lib/conn';
 const moment = extendMoment(Moment);
 
@@ -44,10 +46,12 @@ class CalendarPage extends Component {
       allSlots: [],
       apptDuration: 60, //in minutes
       view: DEFAULT_VIEW,
-      detailDialogOpen: false,
-      addDialogOpen: false,
+      dialogOpen: null,
       selectedSlot: null,
       selectedRange: null,
+      apptTitle: null,
+      apptName: null,
+      apptPhone: null,
     };
   }
 
@@ -56,7 +60,7 @@ class CalendarPage extends Component {
   }
 
   onSelectEvent (slot) {
-    this.setState({ detailDialogOpen: true, selectedSlot: slot });
+    this.setState({ dialogOpen: dialogs.SLOT_DETAIL, selectedSlot: slot });
   }
 
   removeSlot (slot) {
@@ -69,12 +73,12 @@ class CalendarPage extends Component {
       conn.sendText(body);
     }
     conn.deleteSlot(slot._id, (slots) => this.setState({ allSlots: slots }));
-    this.setState({ detailDialogOpen: false })
+    this.setState({ dialogOpen: null })
   }
 
   handleSelectCell = ({start, end}) => {
     console.log('cell:', {start, end});
-    this.setState({addDialogOpen: true, selectedRange: {start, end}});
+    this.setState({dialogOpen: dialogs.ADD_SLOT, selectedRange: {start, end}});
   }
 
   addSlots ({start, end}) {
@@ -90,7 +94,7 @@ class CalendarPage extends Component {
         conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
       }
     });
-    this.setState({ addDialogOpen: false })
+    this.setState({ dialogOpen: null })
   }
 
   eventStyleGetter (slot) {
@@ -108,76 +112,161 @@ class CalendarPage extends Component {
     };
   }
 
-  renderAddDialog () {
-    if (this.state.addDialogOpen) {
-      return (
-        <div>
-          <Dialog
-            open
-            TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
-            keepMounted
-            onClose={() => this.setState({ addDialogOpen: false })}
-            aria-labelledby="alert-dialog-slide-title"
-            aria-describedby="alert-dialog-slide-description"
-          >
-            <DialogTitle id="alert-dialog-slide-title">
-              Add slot(s)?
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-slide-description">
-                Create new available time slot(s) from this range?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
-                Add Slot(s)
-              </Button>
-              <Button onClick={() => this.setState({ addDialogOpen: false })} color="secondary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      );
+  handleApptInputChange = (name) => event => {
+    this.setState({
+      [name]: event.target.value,
+    });
+  };
+
+  addAppt() {
+    const update = {
+      title: this.state.apptTitle,
+      appointment: {
+        name: this.state.apptName,
+        phone: this.state.apptPhone,
+      }
+    };
+    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots })); 
+    this.setState({dialogOpen: null})
+  }
+
+  renderDialog() {
+    switch(this.state.dialogOpen) {
+      case dialogs.ADD_APPT:
+        return this.renderAddApptDialog();
+      case dialogs.ADD_SLOT:
+        return this.renderAddSlotDialog();
+      case dialogs.SLOT_DETAIL:
+        return this.renderDetailDialog();
+      default: 
+        return null;
     }
+  }
+
+  renderAddApptDialog() {
+    return (
+      <Dialog
+        open
+        keepMounted
+        onClose={() => this.setState({ dialogOpen: null })}
+        aria-labelledby="alert-dialog-slide-title"
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle id="alert-dialog-slide-title">
+          Add Appointment?
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Full Name"
+            fullWidth
+            onChange={this.handleApptInputChange('apptName')}
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="phone"
+            label="Phone Number"
+            fullWidth
+            onChange={this.handleApptInputChange('apptPhone')}
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="title"
+            label="Purpose"
+            fullWidth
+            onChange={this.handleApptInputChange('apptTitle')}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.addAppt()} color="primary">
+            Schedule
+          </Button>
+          <Button onClick={() => this.setState({ dialogOpen: dialogs.SLOT_DETAIL })} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  renderAddApptBtn () {
+    if (!this.state.selectedSlot.appointment) return (
+      <Button onClick={() => this.setState({dialogOpen: dialogs.ADD_APPT})} color="primary">
+        Add Appointment
+      </Button>
+    );
+  }
+
+  renderAddSlotDialog () {
+    return (
+      <div>
+        <Dialog
+          open
+          TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
+          keepMounted
+          onClose={() => this.setState({ dialogOpen: null })}
+          aria-labelledby="alert-dialog-slide-title"
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <DialogTitle id="alert-dialog-slide-title">
+            Add slot(s)?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-slide-description">
+              Create new available time slot(s) from this range?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
+              Add Slot(s)
+            </Button>
+            <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    );
   }
 
   renderDetailDialog () {
-    if(this.state.detailDialogOpen) {
-      return (
-        <div>
-          <Dialog
-            open
-            TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
-            keepMounted
-            onClose={() => this.setState({ detailDialogOpen: false })}
-            aria-labelledby="alert-dialog-slide-title"
-            aria-describedby="alert-dialog-slide-description"
-          >
-            <DialogTitle id="alert-dialog-slide-title">
-              {this.state.selectedSlot.title}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-slide-description">
-                {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
-                {this.state.selectedSlot.appointment ? 'Cancel Appointment' : 'Remove Timeslot'}
-              </Button>
-              <Button onClick={() => this.setState({ detailDialogOpen: false })} color="secondary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      );
-    }
+    return (
+      <div>
+        <Dialog
+          open
+          TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
+          keepMounted
+          onClose={() => this.setState({ dialogOpen: null })}
+          aria-labelledby="alert-dialog-slide-title"
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <DialogTitle id="alert-dialog-slide-title">
+            {this.state.selectedSlot.title}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-slide-description">
+              {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            {this.renderAddApptBtn()}
+            <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
+              {this.state.selectedSlot.appointment ? 'Cancel Appointment' : 'Remove Timeslot'}
+            </Button>
+            <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    );
   }
 
   render () {
-    console.log('all slots', this.state.allSlots);
     return (
       <div style={styles.pageContainer}>
         <AppBar
@@ -212,8 +301,8 @@ class CalendarPage extends Component {
             max={moment("6:00 PM", "H:mm a")._d}
           />
         </div>
-        {this.renderDetailDialog()}
-        {this.renderAddDialog()}
+        {this.renderDialog()}
+        {/* {this.renderAddSlotDialog()} */}
       </div>
     );
   }
