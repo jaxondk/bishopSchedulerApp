@@ -283,19 +283,10 @@ class BishopPage extends Component {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          title="Your Schedule"
+          title="Your Bishop's Schedule"
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
-        {/* <InputSlider
-          className="slider"
-          axis="x"
-          x={this.state.apptDuration}
-          xmin={15}
-          xmax={120}
-          xstep={15}
-          onChange={(pos) => this.setState({ apptDuration: pos.x })}
-        /> */}
         <div style={styles.calendarContainer}>
           <BigCalendar
             views={['day', 'week', 'month', 'agenda']}
@@ -305,10 +296,9 @@ class BishopPage extends Component {
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}
             style={{ height: "100vh" }}
-            selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
+            selectable={false}
             onView={(view) => this.setState({ view: view })}
             onSelectEvent={(event) => this.onSelectEvent(event)}
-            onSelectSlot={this.handleSelectCell}
             eventPropGetter={this.eventStyleGetter}
             min={moment("8:00 AM", "H:mm a")._d}
             max={moment("6:00 PM", "H:mm a")._d}
