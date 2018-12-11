@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch } from "react-router-dom";
 // import logo from "./logo.svg";
-import AppointmentApp from "./components/AppointmentApp.js";
+import MemberPage from "./components/MemberPage";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import BishopPage from "./components/BishopPage";
@@ -15,7 +15,7 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={LandingPage} />
             <Route path="/bishopric" component={BishopPage} />
-            <Route path="/members" component={AppointmentApp} />
+            <Route path="/members" component={MemberPage} />
           </Switch>
         </MuiThemeProvider>
       </div>

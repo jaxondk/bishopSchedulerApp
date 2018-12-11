@@ -29,12 +29,13 @@ const styles = {
     flex: 1,
     margin: 10,
   },
-  emptySlot: {
+  takenSlot: {
     padding: '2px 5px',
     backgroundColor: 'lightgrey',
     borderRadius: '5px',
     color: 'black',
-    cursor: 'pointer',
+    cursor: 'default',
+    pointerEvents: 'none',
   },
 }
 const DEFAULT_VIEW = 'week';
@@ -48,7 +49,6 @@ class BishopPage extends Component {
       view: DEFAULT_VIEW,
       dialogOpen: null,
       selectedSlot: null,
-      selectedRange: null,
       apptTitle: null,
       apptName: null,
       apptPhone: null,
@@ -60,55 +60,21 @@ class BishopPage extends Component {
   }
 
   onSelectEvent (slot) {
-    this.setState({ dialogOpen: dialogs.SLOT_DETAIL, selectedSlot: slot });
-  }
-
-  removeAppt (slot) {
-    const firstName = slot.appointment.name.split(' ')[0];
-    const body = {
-      to: slot.appointment.phone,
-      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+    if (!slot.appointment) {
+      this.setState({ dialogOpen: dialogs.ADD_APPT, selectedSlot: slot });
     }
-    conn.sendText(body);
-    const update = {
-      title: 'Available',
-      appointment: null
-    };
-    conn.updateSlot(slot._id, update, (slots) => this.setState({ allSlots: slots, dialogOpen: null }));
-  }
-
-  removeSlot (slot) {
-    conn.deleteSlot(slot._id, (slots) => this.setState({ allSlots: slots }));
-    this.setState({ dialogOpen: null });
-  }
-
-  handleSelectCell = ({ start, end }) => {
-    this.setState({ dialogOpen: dialogs.ADD_SLOT, selectedRange: { start, end } });
-  }
-
-  addSlots ({ start, end }) {
-    const range = moment.range(start, end);
-    var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
-    times.forEach((start_moment, i) => {
-      if (i !== times.length - 1) {
-        const new_slot = {
-          start: start_moment._d,
-          end: times[i + 1]._d,
-          title: 'Available',
-        };
-        conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
-      }
-    });
-    this.setState({ dialogOpen: null });
   }
 
   eventStyleGetter (slot) {
-    let style = JSON.parse(JSON.stringify(styles.emptySlot));
+    let style = JSON.parse(JSON.stringify(styles.takenSlot));
 
-    if (slot.appointment) {
-      style.backgroundColor = "lightgreen";
-      style.borderColor = 'green';
-      style.borderLeft = '6px solid green';
+    if (!slot.appointment) {
+      style.color = '#fff';
+      style.backgroundColor = "#3174ad";
+      style.borderColor = '#224f77';
+      style.borderLeft = '6px solid #224f77';
+      style.cursor = 'pointer';
+      style.pointerEvents = 'auto';
     }
 
     return {
@@ -135,21 +101,8 @@ class BishopPage extends Component {
     this.setState({ dialogOpen: null })
   }
 
-  renderDialog () {
-    switch (this.state.dialogOpen) {
-      case dialogs.ADD_APPT:
-        return this.renderAddApptDialog();
-      case dialogs.ADD_SLOT:
-        return this.renderAddSlotDialog();
-      case dialogs.SLOT_DETAIL:
-        return this.renderDetailDialog();
-      default:
-        return null;
-    }
-  }
-
   renderAddApptDialog () {
-    return (
+    if(this.state.dialogOpen === dialogs.ADD_APPT) return (
       <Dialog
         open
         keepMounted
@@ -158,7 +111,7 @@ class BishopPage extends Component {
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle id="alert-dialog-slide-title">
-          Add Appointment?
+          Schedule Appointment
         </DialogTitle>
         <DialogContent>
           <TextField
@@ -198,87 +151,6 @@ class BishopPage extends Component {
     );
   }
 
-  renderDetailBtns () {
-    if (!this.state.selectedSlot.appointment) {
-      return (
-        <React.Fragment>
-          <Button onClick={() => this.setState({ dialogOpen: dialogs.ADD_APPT })} color="primary">
-            Add Appointment
-          </Button>
-          <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
-            Remove Timeslot
-          </Button>
-        </React.Fragment>
-      );
-    } else return (
-      <Button onClick={() => this.removeAppt(this.state.selectedSlot)} color="primary">
-        Cancel Appointment
-      </Button>
-    );
-  }
-
-  renderAddSlotDialog () {
-    return (
-      <div>
-        <Dialog
-          open
-          TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
-          keepMounted
-          onClose={() => this.setState({ dialogOpen: null })}
-          aria-labelledby="alert-dialog-slide-title"
-          aria-describedby="alert-dialog-slide-description"
-        >
-          <DialogTitle id="alert-dialog-slide-title">
-            Add slot(s)?
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-slide-description">
-              Create new available time slot(s) from this range?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
-              Add Slot(s)
-            </Button>
-            <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-
-  renderDetailDialog () {
-    return (
-      <div>
-        <Dialog
-          open
-          TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
-          keepMounted
-          onClose={() => this.setState({ dialogOpen: null })}
-          aria-labelledby="alert-dialog-slide-title"
-          aria-describedby="alert-dialog-slide-description"
-        >
-          <DialogTitle id="alert-dialog-slide-title">
-            {this.state.selectedSlot.title}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-slide-description">
-              {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            {this.renderDetailBtns()}
-            <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-
   render () {
     return (
       <div style={styles.pageContainer}>
@@ -295,6 +167,7 @@ class BishopPage extends Component {
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}
+            titleAccessor={(slot) => ((slot.appointment) ? 'Slot Taken' : 'Available')}
             style={{ height: "100vh" }}
             selectable={false}
             onView={(view) => this.setState({ view: view })}
@@ -304,8 +177,7 @@ class BishopPage extends Component {
             max={moment("6:00 PM", "H:mm a")._d}
           />
         </div>
-        {this.renderDialog()}
-        {/* {this.renderAddSlotDialog()} */}
+        {this.renderAddApptDialog()}
       </div>
     );
   }
