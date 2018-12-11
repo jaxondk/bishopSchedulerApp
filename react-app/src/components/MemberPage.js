@@ -17,9 +17,6 @@ const styles = {
   pageContainer: {
     flex: 1,
   },
-  // sliderContainer: {
-  //   flex: 1,
-  // },
   calendarContainer: {
     flex: 1,
     margin: 10,
@@ -34,6 +31,7 @@ const styles = {
   },
 }
 const DEFAULT_VIEW = 'week';
+const BISHOP_PHONE = '8323144134';
 
 class BishopPage extends Component {
   constructor(props, context) {
@@ -94,6 +92,15 @@ class BishopPage extends Component {
     };
     conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots }));
     this.setState({ dialogOpen: null })
+    // Send text
+    const time = this.state.selectedSlot.start;
+    const date = moment(time).format("dddd[,] MMMM Do");
+    const startTime = moment(time).format("h:mm a");
+    const body = {
+      to: BISHOP_PHONE,
+      msg: `Bishop, ${update.appointment.name} just signed up to meet with you on ${date} at ${startTime}. The purpose they stated for the appointment is "${update.title}" \n -- <3 Your favorite executive secretary`,
+    }
+    conn.sendText(body);
   }
 
   renderAddApptDialog () {

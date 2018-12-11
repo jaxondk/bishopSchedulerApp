@@ -64,12 +64,17 @@ class BishopPage extends Component {
   }
 
   removeAppt (slot) {
+    // Send cancelation text
     const firstName = slot.appointment.name.split(' ')[0];
+    const time = this.state.selectedSlot.start;
+    const date = moment(time).format("dddd[,] MMMM Do");
+    const startTime = moment(time).format("h:mm a");
     const body = {
       to: slot.appointment.phone,
-      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
     conn.sendText(body);
+    // remove appt from db.
     const update = {
       title: 'Available',
       appointment: null
