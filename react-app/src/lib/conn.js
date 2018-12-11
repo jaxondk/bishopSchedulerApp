@@ -1,8 +1,8 @@
 import axios from "axios";
 import moment from 'moment';
 
-//const API_BASE = "http://localhost:8083/api/";
-const API_BASE = "http://178.128.68.128:8083/api/";
+const API_BASE = "http://localhost:8083/api/";
+// const API_BASE = "http://178.128.68.128:8083/api/";
 
 // FOR REACT-BIG-CALENDAR, ALL DATE STRINGS MUST BE CONVERTED TO DATES!
 const slotStringsToDates = (slot) => {
