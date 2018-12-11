@@ -45,9 +45,9 @@ class CalendarPage extends Component {
       apptDuration: 60, //in minutes
       view: DEFAULT_VIEW,
       detailDialogOpen: false,
-      addSlotDialogOpen: false,
+      addDialogOpen: false,
       selectedSlot: null,
-      selectedCell: null,
+      selectedRange: null,
     };
   }
 
@@ -56,8 +56,7 @@ class CalendarPage extends Component {
   }
 
   onSelectEvent (slot) {
-    this.setState({ selectedSlot: slot });
-    this.setState({ detailDialogOpen: true });
+    this.setState({ detailDialogOpen: true, selectedSlot: slot });
   }
 
   removeSlot (slot) {
@@ -73,22 +72,25 @@ class CalendarPage extends Component {
     this.setState({ detailDialogOpen: false })
   }
 
-  handleSelectCell = ({ start, end }) => {
-    const create = window.confirm('Create new available time slots from this range?')
-    if (create) {
-      const range = moment.range(start, end);
-      var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
-      times.forEach((start_moment, i) => {
-        if (i !== times.length - 1) {
-          const new_slot = {
-            start: start_moment._d,
-            end: times[i + 1]._d,
-            title: 'Available',
-          };
-          conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
-        }
-      });
-    }
+  handleSelectCell = ({start, end}) => {
+    console.log('cell:', {start, end});
+    this.setState({addDialogOpen: true, selectedRange: {start, end}});
+  }
+
+  addSlots ({start, end}) {
+    const range = moment.range(start, end);
+    var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
+    times.forEach((start_moment, i) => {
+      if (i !== times.length - 1) {
+        const new_slot = {
+          start: start_moment._d,
+          end: times[i + 1]._d,
+          title: 'Available',
+        };
+        conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
+      }
+    });
+    this.setState({ addDialogOpen: false })
   }
 
   eventStyleGetter (slot) {
@@ -106,7 +108,41 @@ class CalendarPage extends Component {
     };
   }
 
-  renderDialog () {
+  renderAddDialog () {
+    if (this.state.addDialogOpen) {
+      return (
+        <div>
+          <Dialog
+            open
+            TransitionComponent={(props) => (<Slide direction="down" {...props} />)}
+            keepMounted
+            onClose={() => this.setState({ addDialogOpen: false })}
+            aria-labelledby="alert-dialog-slide-title"
+            aria-describedby="alert-dialog-slide-description"
+          >
+            <DialogTitle id="alert-dialog-slide-title">
+              Add slot(s)?
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-slide-description">
+                Create new available time slot(s) from this range?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
+                Add Slot(s)
+              </Button>
+              <Button onClick={() => this.setState({ addDialogOpen: false })} color="secondary">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
+      );
+    }
+  }
+
+  renderDetailDialog () {
     if(this.state.detailDialogOpen) {
       return (
         <div>
@@ -176,7 +212,8 @@ class CalendarPage extends Component {
             max={moment("6:00 PM", "H:mm a")._d}
           />
         </div>
-        {this.renderDialog()}
+        {this.renderDetailDialog()}
+        {this.renderAddDialog()}
       </div>
     );
   }

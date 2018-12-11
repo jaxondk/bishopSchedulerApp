@@ -17,11 +17,7 @@ import {
   StepContent
 } from "material-ui/Stepper";
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
-import axios from 'axios';
 import conn from "../lib/conn";
-
-
-const API_BASE = "http://localhost:8083/api/";
 
 class AppointmentApp extends Component {
   constructor(props, context) {
@@ -56,17 +52,18 @@ class AppointmentApp extends Component {
     };
     // return defaultState;
   }
-
+  
   componentWillMount() {
-    conn.getSlots(this.handleDBReponse);
-    // axios.get(API_BASE + `slots`).then(response => {
-    //   console.log("response via db: ", response.data);
-    //   this.handleDBReponse(response.data);
-    // })
-    // .catch((err) => console.log('err retrieving slots', err));
+    conn.getSlots((data) => {
+      this.setState({ allSlots: data });
+      console.log("data: ", data);
+      this.handleDBReponse(data);
+    });
   }
   handleSetAppointmentDate(date) {
+    console.log("date chosen:", date);
     const dateString = moment(date, "YYYY-MM-DD").format("YYYY-MM-DD");
+    console.log("date String:", dateString);
     const openSlots = this.state.openSlots
     if(openSlots[dateString]){
       //need to order time slots..
@@ -96,32 +93,36 @@ class AppointmentApp extends Component {
     const newAppointment = {
       name: this.state.firstName + " " + this.state.lastName,
       phone: this.state.phone,
-      title: this.state.appointmentTitle
     };
     // this.setState({ confirmationModalOpen: false });
-    axios
-      .put(API_BASE + "slots/"+ this.state.appointmentSlot._id, newAppointment) // Instead, use slot2controller's update with appt call
-      .then(response =>
-        {
-          console.log("appointment successfully added to DB!");
+    const updatedSlot = this.state.appointmentSlot;
+    updatedSlot.title= this.state.appointmentTitle;
+    updatedSlot.appointment = newAppointment;
+
+    conn.updateSlot(this.state.appointmentSlot._id, updatedSlot, (data) => {
+      console.log("appointment successfully added to DB!");
           this.setState({
           confirmationSnackbarMessage: "Appointment succesfully added!",
           confirmationSnackbarOpen: true,
           processed: true    
         });        
         this.setState({ confirmationModalOpen: false });
-        this.renderSuccessDialog();}
-      )
-      .catch(err => {
-        console.log(err);
-        console.log("appointment failed to save");
-        return this.setState({
-          confirmationSnackbarMessage: "Appointment failed to save.",
-          confirmationSnackbarOpen: true
-        });
-      });
+        this.sendText(updatedSlot);
+        this.renderSuccessDialog();
+    });
   }
-  
+  sendText(slot){
+    const firstName = slot.appointment.name.split(' ')[0];
+    const date = moment(slot.start).format("dddd[,] MMMM Do[,] YYYY");
+    const startTime = moment(slot.start).format("h:mm a");
+    const body = {
+          to: slot.appointment.phone,
+          msg: `Hey ${firstName}, this is a reminder for your upcoming appointment with bishop on ${date} at ${startTime}. I'll meet you in the foyer of the Manavu chapel! \n -- <3 Your favorite executive secretary`,
+    }
+    conn.sendText(body);
+  }
+
+
   handleNext = () => {
     const { stepIndex } = this.state;
     this.setState({
@@ -151,15 +152,13 @@ class AppointmentApp extends Component {
         .diff(moment().startOf("day")) < 0
     );
   }
-
-  
   handleDBReponse(response) {
     // const appointments = response;
     const openSlots = {};
     response.forEach(function(slot){  
       const {start, appointment} = slot;
-      const dateString = moment(start, "YYYY-DD-MM").format(
-        "YYYY-DD-MM"
+      const dateString = moment(start, "YYYY-MM-DD").format(
+        "YYYY-MM-DD"
       );
       if(!appointment){
         if(!openSlots[dateString]){
@@ -198,9 +197,6 @@ class AppointmentApp extends Component {
             at{" "}
             <span style={spanStyle}>
               {moment(this.state.appointmentSlot.start)
-                // .hour(9)
-                // .minute(0)
-                // .add(this.state.appointmentSlot.start, "hours")
                 .format("h:mm a")}
             </span>
           </p>
@@ -228,10 +224,7 @@ class AppointmentApp extends Component {
           </span>{" "}
           at{" "}
           <span style={spanStyle}>
-            {moment(this.state.appointmentSlot)
-              // .hour(9)
-              // .minute(0)
-              // .add(this.state.appointmentSlot, "hours")
+            {moment(this.state.appointmentSlot.start)
               .format("h:mm a")}
           </span>.
         </p>
@@ -247,6 +240,7 @@ class AppointmentApp extends Component {
       if(this.state.availableAppointmentSlots){
         const slots = this.state.availableAppointmentSlots;
         return slots.map(slot => {
+          // const slot = React.createRef(eachSlot);
           const {start, end} = slot;
           const appointmentDateString = moment(this.state.appointmentDate).format("YYYY-DD-MM");
           const time1 = moment(start);
@@ -519,18 +513,8 @@ class AppointmentApp extends Component {
             }
             title="Appointment Scheduled!"
           >
-            {this.renderSuccessDialog()}
+            {/* {this.renderSuccessDialog()} */}
           </Dialog>
-          {/* <SnackBar
-            open={confirmationSnackbarOpen || isLoading}
-            message={
-              isLoading ? "Loading... " : data.confirmationSnackbarMessage || ""
-            }
-            autoHideDuration={10000}
-            onRequestClose={() =>
-              this.setState({ confirmationSnackbarOpen: false })
-            }
-          /> */}
         </section>
       </div>
     );
