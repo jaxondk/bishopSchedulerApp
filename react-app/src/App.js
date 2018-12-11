@@ -5,14 +5,15 @@ import AppointmentApp from "./components/AppointmentApp.js";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import CalendarPage from "./components/CalendarPage";
+import LandingPage from "./components/LandingPage";
 
 class App extends Component {
   render () {
     return (
       <div>
         <MuiThemeProvider>
-          <Switch>
-            <Route exact path="/" component={CalendarPage} /> {/* TODO - Make this the LandingPage */}
+          <Switch>            
+            <Route exact path="/" component={LandingPage} />
             <Route path="/bishopric" component={CalendarPage} />
             <Route path="/members" component={AppointmentApp} />
           </Switch>
