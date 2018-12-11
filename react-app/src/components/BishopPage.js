@@ -39,7 +39,7 @@ const styles = {
 }
 const DEFAULT_VIEW = 'week';
 
-class CalendarPage extends Component {
+class BishopPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -82,12 +82,11 @@ class CalendarPage extends Component {
     this.setState({ dialogOpen: null });
   }
 
-  handleSelectCell = ({start, end}) => {
-    console.log('cell:', {start, end});
-    this.setState({dialogOpen: dialogs.ADD_SLOT, selectedRange: {start, end}});
+  handleSelectCell = ({ start, end }) => {
+    this.setState({ dialogOpen: dialogs.ADD_SLOT, selectedRange: { start, end } });
   }
 
-  addSlots ({start, end}) {
+  addSlots ({ start, end }) {
     const range = moment.range(start, end);
     var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
     times.forEach((start_moment, i) => {
@@ -124,7 +123,7 @@ class CalendarPage extends Component {
     });
   };
 
-  addAppt() {
+  addAppt () {
     const update = {
       title: this.state.apptTitle,
       appointment: {
@@ -132,24 +131,24 @@ class CalendarPage extends Component {
         phone: this.state.apptPhone,
       }
     };
-    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots })); 
-    this.setState({dialogOpen: null})
+    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots }));
+    this.setState({ dialogOpen: null })
   }
 
-  renderDialog() {
-    switch(this.state.dialogOpen) {
+  renderDialog () {
+    switch (this.state.dialogOpen) {
       case dialogs.ADD_APPT:
         return this.renderAddApptDialog();
       case dialogs.ADD_SLOT:
         return this.renderAddSlotDialog();
       case dialogs.SLOT_DETAIL:
         return this.renderDetailDialog();
-      default: 
+      default:
         return null;
     }
   }
 
-  renderAddApptDialog() {
+  renderAddApptDialog () {
     return (
       <Dialog
         open
@@ -322,4 +321,4 @@ class CalendarPage extends Component {
   }
 }
 
-export default CalendarPage;
+export default BishopPage;

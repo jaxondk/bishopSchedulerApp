@@ -4,7 +4,7 @@ import { Route, Switch } from "react-router-dom";
 import AppointmentApp from "./components/AppointmentApp.js";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
-import CalendarPage from "./components/CalendarPage";
+import BishopPage from "./components/BishopPage";
 import LandingPage from "./components/LandingPage";
 
 class App extends Component {
@@ -12,9 +12,9 @@ class App extends Component {
     return (
       <div>
         <MuiThemeProvider>
-          <Switch>            
+          <Switch>
             <Route exact path="/" component={LandingPage} />
-            <Route path="/bishopric" component={CalendarPage} />
+            <Route path="/bishopric" component={BishopPage} />
             <Route path="/members" component={AppointmentApp} />
           </Switch>
         </MuiThemeProvider>
