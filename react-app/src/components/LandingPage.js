@@ -12,21 +12,18 @@ class LandingPage extends Component {
       <Provider>
         <Hero
           color="black"
-          bg="background: #dbe8f9;
-          background: -moz-linear-gradient(top, #dbe8f9 41%, #b3cee5 64%, #87a0d3 98%, #829be0 100%);
-          background: -webkit-linear-gradient(top, #dbe8f9 41%,#b3cee5 64%,#87a0d3 98%,#829be0 100%);
-          background: linear-gradient(to bottom, #dbe8f9 41%,#b3cee5 64%,#87a0d3 98%,#829be0 100%);
-          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbe8f9', endColorstr='#829be0',GradientType=0 );"
-          // backgroundImage="https://source.unsplash.com/jxaj-UrzQbc/1600x900"
-          // backgroundImage="https://amppob.com/wp-content/uploads/2018/06/iStock-916563360-810x405.jpg"
+          // bg="background: #dbe8f9;
+          // background: -moz-linear-gradient(top, #dbe8f9 41%, #b3cee5 64%, #87a0d3 98%, #829be0 100%);
+          // background: -webkit-linear-gradient(top, #dbe8f9 41%,#b3cee5 64%,#87a0d3 98%,#829be0 100%);
+          // background: linear-gradient(to bottom, #dbe8f9 41%,#b3cee5 64%,#87a0d3 98%,#829be0 100%);
+          // filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbe8f9', endColorstr='#829be0',GradientType=0 );"
+          backgroundImage="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwYNCAgIBwcHBgcNBw0ICAYHBw8ICRANFREiFhURFRUYHSggGBolGxUfITEhJSkrLi4uFx8zODMsNygtLisBCgoKDQ0NDg0NDi0ZHxkrKzcrKysrKysrKysrKysrLSsrKysrKysrKysrKysrKysrKysrKystNysrKysrKysrK//AABEIAM0A9gMBIgACEQEDEQH/xAAYAAEBAQEBAAAAAAAAAAAAAAABAgAGB//EABUQAQEAAAAAAAAAAAAAAAAAAAAB/8QAGQEBAQEBAQEAAAAAAAAAAAAAAQIABQQG/8QAFREBAQAAAAAAAAAAAAAAAAAAAAH/2gAMAwEAAhEDEQA/APTWZnSfJMGorEUGpqiBSmlmTTQoipNBIorClhRWCiKKakkUGiqIqaQYwqTQoiilNJFFKapgKUkswrEuoZmrlvIE0ikgVqCRQalRFFKaWFFKVFqmmgkUNRSworCqIFNSS1TSKoippFUwTVVJIqaaCRQU1TCszEupFNS5TytUmgsKKwqiKKwJFFNSoig1NLCilNUWTTU0lkmiqIorUUxmTTUqLVJopIqSKphU0ikhNVUqIIrFnU0UprlPKKKUktU00KIqTRSworCkgU1NUQDU0sKDU1RZNIpIDUVTChhSQKamqLJpqSWqTRVMKk0UkMzEupqaaHKeQUGpqiKKU0lk01NUzJNFJFSaKSBSmqIFNSWapNTVQsmmiqIDUFhQ1FJFDUVRApTSWSaFMKwrEuqqaRXKeUCmppYA1NURQamkgUpqmZNNBIqTQSKKwqiAQphUmikiisKohNIpYBqFEUNRSRRSmkhmZTOqSaK5TyipNFJArClgKalRFBqSRRSmqIFILCppoVCKKU0kClKmapNBIqTRVEUVhSQKwUwopqSRWYEuqFKa5TyMmmhRFSaCRRWFLCisFEUU1JIoNFURU0gsKk0KIopTSRRSmqYClJLVNNCiKGFJFFYVTBmoJdVQ1DlPKKKU0sKKUqLVNNBIoailhRWFUQKaklqmkVRFTSKpgmqqSRU00EigpqmFFKaSyaalRapNFJFYVizqqmkOU8oopqVEUGppYUUpqiyaaklkmikiisKqMyaalRapNFJFSRVMKmkUkJqqlRFBqaWFBqaSyaU1RZhWJdVUmiuU8gorCkgU1NUQDU0sKDU1RZNIpIDUVTChhSQKamqLJpqSWqTRVMKk0UkClNUQDUkig1JZmZiXUppqa5byMk0UkVJopIFKaogU1JZqk1NVCyaaKogNQWFDUUkUNRVEClNJANCmFSaKSKKwqiAzEszMzOnoNTXLeUClNUzJpoJFSaCRRSmqIBCmFSaKSKmkVRCaRSwDUKIoNSSKKU0kCkKYVNNBIZmJZmZmf//Z"
         >
           <img src={require('./calendar2.png')} width="25%"/>
           <Heading>Secretariat</Heading>
           <br/>
           <Subhead>Manage a Bishop's schedule with ease</Subhead>
           <p>Keep schedules up to date with automated text reminders</p>
-          {/* <CallToAction href="/getting-started" mt={3}>Get Started</CallToAction> */}
-          {/* make CallToAction into a Rounded button */}
           <Button variant="contained" size="large" color="primary" href="/bishopric">
           Get started
         </Button>
