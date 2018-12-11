@@ -25,7 +25,7 @@ const styles = {
   // },
   calendarContainer: {
     flex: 1,
-    marginTop: 10,
+    margin: 10,
   },
   emptySlot: {
     padding: '2px 5px',

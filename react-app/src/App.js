@@ -12,7 +12,6 @@ class App extends Component {
       <div>
         <MuiThemeProvider>
           <Switch>
-            
             <Route exact path="/" component={CalendarPage} /> {/* TODO - Make this the LandingPage */}
             <Route path="/bishopric" component={CalendarPage} />
             <Route path="/members" component={AppointmentApp} />
