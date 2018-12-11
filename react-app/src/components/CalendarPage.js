@@ -63,17 +63,23 @@ class CalendarPage extends Component {
     this.setState({ dialogOpen: dialogs.SLOT_DETAIL, selectedSlot: slot });
   }
 
-  removeSlot (slot) {
-    if (slot.appointment) {
-      const firstName = slot.appointment.name.split(' ')[0];
-      const body = {
-        to: slot.appointment.phone,
-        msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
-      }
-      conn.sendText(body);
+  removeAppt (slot) {
+    const firstName = slot.appointment.name.split(' ')[0];
+    const body = {
+      to: slot.appointment.phone,
+      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
+    conn.sendText(body);
+    const update = {
+      title: 'Available',
+      appointment: null
+    };
+    conn.updateSlot(slot._id, update, (slots) => this.setState({ allSlots: slots, dialogOpen: null }));
+  }
+
+  removeSlot (slot) {
     conn.deleteSlot(slot._id, (slots) => this.setState({ allSlots: slots }));
-    this.setState({ dialogOpen: null })
+    this.setState({ dialogOpen: null });
   }
 
   handleSelectCell = ({start, end}) => {
@@ -94,7 +100,7 @@ class CalendarPage extends Component {
         conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
       }
     });
-    this.setState({ dialogOpen: null })
+    this.setState({ dialogOpen: null });
   }
 
   eventStyleGetter (slot) {
@@ -185,7 +191,7 @@ class CalendarPage extends Component {
           <Button onClick={() => this.addAppt()} color="primary">
             Schedule
           </Button>
-          <Button onClick={() => this.setState({ dialogOpen: dialogs.SLOT_DETAIL })} color="secondary">
+          <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
             Close
           </Button>
         </DialogActions>
@@ -193,10 +199,21 @@ class CalendarPage extends Component {
     );
   }
 
-  renderAddApptBtn () {
-    if (!this.state.selectedSlot.appointment) return (
-      <Button onClick={() => this.setState({dialogOpen: dialogs.ADD_APPT})} color="primary">
-        Add Appointment
+  renderDetailBtns () {
+    if (!this.state.selectedSlot.appointment) {
+      return (
+        <React.Fragment>
+          <Button onClick={() => this.setState({ dialogOpen: dialogs.ADD_APPT })} color="primary">
+            Add Appointment
+          </Button>
+          <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
+            Remove Timeslot
+          </Button>
+        </React.Fragment>
+      );
+    } else return (
+      <Button onClick={() => this.removeAppt(this.state.selectedSlot)} color="primary">
+        Cancel Appointment
       </Button>
     );
   }
@@ -253,10 +270,7 @@ class CalendarPage extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            {this.renderAddApptBtn()}
-            <Button onClick={() => this.removeSlot(this.state.selectedSlot)} color="primary">
-              {this.state.selectedSlot.appointment ? 'Cancel Appointment' : 'Remove Timeslot'}
-            </Button>
+            {this.renderDetailBtns()}
             <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
               Close
             </Button>
