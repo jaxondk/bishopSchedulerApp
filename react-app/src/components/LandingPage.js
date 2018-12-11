@@ -27,7 +27,7 @@ class LandingPage extends Component {
           <p>Keep schedules up to date with automated text reminders</p>
           {/* <CallToAction href="/getting-started" mt={3}>Get Started</CallToAction> */}
           {/* make CallToAction into a Rounded button */}
-          <Button variant="contained" size="large" color="primary" href="https://www.facebook.com/">
+          <Button variant="contained" size="large" color="primary" href="/bishopric">
           Get started
         </Button>
         </Hero>
