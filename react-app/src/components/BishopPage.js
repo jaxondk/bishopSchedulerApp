@@ -17,6 +17,8 @@ import { dialogs } from '../constants';
 import conn from '../lib/conn';
 import { slotRange } from '../lib/util';
 
+import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
+
 const moment = extendMoment(Moment);
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
@@ -45,7 +47,7 @@ class BishopPage extends Component {
     super(props, context);
     this.state = {
       allSlots: [],
-      apptDuration: 60, //in minutes
+      apptDuration: 15, //in minutes
       view: DEFAULT_VIEW,
       dialogOpen: null,
       selectedSlot: null,
@@ -93,6 +95,10 @@ class BishopPage extends Component {
   }
 
   addSlots ({ start, end }) {
+    const length = moment(start).add("minutes", this.state.apptDuration);
+    if(end < length){
+      end = length;
+    }
     const range = moment.range(start, end);
     var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
     times.forEach((start_moment, i) => {
@@ -105,7 +111,7 @@ class BishopPage extends Component {
         conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
       }
     });
-    this.setState({ dialogOpen: null });
+    this.setState({ dialogOpen: null, apptDuration: 15});
   }
 
   eventStyleGetter (slot) {
@@ -207,6 +213,29 @@ class BishopPage extends Component {
     );
   }
 
+  renderApptDurations() {
+    if (!this.state.isLoading) {
+      const durations = [15, 30, 45, 60];
+        return durations.map(duration => {
+          return (
+            <RadioButton
+              label={duration + " minutes"}
+              key={durations.indexOf(duration)}
+              value={duration}
+              style={{
+                marginBottom: 15,
+              }}
+            />
+          );
+        });
+      }
+  }
+
+  handleSetAppointmentDuration(duration) {
+    // this.setState({ apptDuration: duration });
+    this.state.apptDuration = duration;
+  }
+
   renderDetailBtns () {
     if (!this.state.selectedSlot.appointment) {
       return (
@@ -238,13 +267,24 @@ class BishopPage extends Component {
           aria-describedby="alert-dialog-slide-description"
         >
           <DialogTitle id="alert-dialog-slide-title">
-            Add slot(s)?
+            Choose duration for appointment slot(s):
           </DialogTitle>
-          <DialogContent>
+          <RadioButtonGroup
+            style={{
+              marginTop: 15,
+              marginLeft: 15
+            }}
+            name="appointmentTimes"
+            defaultSelected={15}
+            onChange={(evt, val) => this.handleSetAppointmentDuration(val)}
+          >
+          {this.renderApptDurations()}
+          </RadioButtonGroup>
+          {/* <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
               Create new available time slot(s) from this range?
             </DialogContentText>
-          </DialogContent>
+          </DialogContent> */}
           <DialogActions>
             <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
               Add Slot(s)
@@ -292,7 +332,14 @@ class BishopPage extends Component {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          title="Your Schedule"
+          // title="Your Schedule"
+          titleStyle={{ lineHeight: 'normal' }}
+          title={
+            <div>
+              <div style={{ marginTop: 10 }}>Your Schedule</div>
+              <div style={{ fontSize: 'small', fontWeight: 300 }}>Click on the calendar to set times you're available to meet.</div>
+            </div>
+          }
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
@@ -309,7 +356,8 @@ class BishopPage extends Component {
           <BigCalendar
             views={['day', 'week', 'month', 'agenda']}
             localizer={localizer}
-            step={this.state.apptDuration}
+            // step={this.state.apptDuration}
+            step={15}
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}

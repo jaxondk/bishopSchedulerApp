@@ -40,7 +40,7 @@ class BishopPage extends Component {
     super(props, context);
     this.state = {
       allSlots: [],
-      apptDuration: 60, //in minutes
+      apptDuration: 15, //in minutes
       view: DEFAULT_VIEW,
       dialogOpen: null,
       selectedSlot: null,
@@ -169,7 +169,14 @@ class BishopPage extends Component {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          title="Your Bishop's Schedule"
+          // title="Your Bishop's Schedule"
+          titleStyle={{ lineHeight: 'normal' }}
+          title={
+            <div>
+              <div style={{ marginTop: 10 }}>Your Bishop's Schedule</div>
+              <div style={{ fontSize: 'small', fontWeight: 300 }}>Click on a slot to reserve an appointment time.</div>
+            </div>
+          }
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
