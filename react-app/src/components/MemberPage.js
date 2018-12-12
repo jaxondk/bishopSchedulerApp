@@ -6,10 +6,12 @@ import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from 'moment';
 import { dialogs } from '../constants';
+import { slotRange } from '../lib/util';
 import conn from '../lib/conn';
 
 const localizer = BigCalendar.momentLocalizer(moment);
@@ -113,9 +115,12 @@ class BishopPage extends Component {
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle id="alert-dialog-slide-title">
-          Schedule Appointment
+          Schedule Appointment?
         </DialogTitle>
         <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+            {slotRange(this.state.selectedSlot)}
+          </DialogContentText>
           <TextField
             autoFocus
             margin="dense"

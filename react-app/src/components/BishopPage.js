@@ -15,8 +15,9 @@ import { extendMoment } from 'moment-range';
 // import InputSlider from 'react-input-slider';
 import { dialogs } from '../constants';
 import conn from '../lib/conn';
-const moment = extendMoment(Moment);
+import { slotRange } from '../lib/util';
 
+const moment = extendMoment(Moment);
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
   pageContainer: {
@@ -163,9 +164,12 @@ class BishopPage extends Component {
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle id="alert-dialog-slide-title">
-          Add Appointment?
+          Schedule Appointment?
         </DialogTitle>
         <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+            {slotRange(this.state.selectedSlot)}
+          </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
@@ -270,7 +274,7 @@ class BishopPage extends Component {
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
-              {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
+              {this.state.selectedSlot.appointment ? 'With ' + this.state.selectedSlot.appointment.name + ' at ' : 'No appointment from '} {slotRange(this.state.selectedSlot)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
