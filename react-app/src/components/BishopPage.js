@@ -313,6 +313,7 @@ class BishopPage extends Component {
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}
+            titleAccessor={(slot) => (slot.appointment) ? ''+(slot.appointment.name)+': '+slot.title : slot.title}
             style={{ height: "100vh" }}
             selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
             onView={(view) => this.setState({ view: view })}
@@ -324,7 +325,6 @@ class BishopPage extends Component {
           />
         </div>
         {this.renderDialog()}
-        {/* {this.renderAddSlotDialog()} */}
       </div>
     );
   }
