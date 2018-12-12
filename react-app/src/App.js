@@ -6,6 +6,7 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import BishopPage from "./components/BishopPage";
 import LandingPage from "./components/LandingPage";
+// import AppointmentApp from "./components/AppointmentApp";
 
 class App extends Component {
   render () {
@@ -16,6 +17,7 @@ class App extends Component {
             <Route exact path="/" component={LandingPage} />
             <Route path="/bishopric" component={BishopPage} />
             <Route path="/members" component={MemberPage} />
+            {/* <Route path="/appt" component={AppointmentApp} /> */}
           </Switch>
         </MuiThemeProvider>
       </div>

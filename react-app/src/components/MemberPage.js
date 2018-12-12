@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import AppBar from "material-ui/AppBar";
 import BigCalendar from "react-big-calendar";
 import Button from '@material-ui/core/Button';
-import TextField from "@material-ui/core/TextField";
+import TextField from "material-ui/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -47,6 +47,7 @@ class BishopPage extends Component {
       apptTitle: null,
       apptName: null,
       apptPhone: null,
+      validPhone: true
     };
   }
 
@@ -93,7 +94,8 @@ class BishopPage extends Component {
       }
     };
     conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots }));
-    this.setState({ dialogOpen: null })
+    this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
+    // this.setState({ dialogOpen: null })
     // Send text
     const time = this.state.selectedSlot.start;
     const date = moment(time).format("dddd[,] MMMM Do");
@@ -128,7 +130,7 @@ class BishopPage extends Component {
           <DialogContentText id="alert-dialog-slide-description">
             {slotRange(this.state.selectedSlot)}
           </DialogContentText>
-          <TextField
+          {/* <TextField
             autoFocus
             margin="dense"
             id="name"
@@ -151,10 +153,48 @@ class BishopPage extends Component {
             label="Purpose"
             fullWidth
             onChange={this.handleApptInputChange('apptTitle')}
+          /> */}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Full Name"
+            fullWidth
+            name="Full Name"
+            hintText="First Name"
+            floatingLabelText="First Name"
+            onChange={this.handleApptInputChange('apptName')}
+          />
+          <TextField
+            margin="dense"
+            id="phone"
+            label="Phone Number"
+            fullWidth  
+            name="Phone Number"
+            hintText="5555555555"
+            floatingLabelText="Phone Number"
+            onChange={(evt, newValue) =>
+              this.validatePhone(newValue)
+            }
+            errorText={
+              this.state.validPhone ? null : "Enter a valid phone number"
+            }
+          />
+          <TextField
+            margin="dense"
+            id="title"
+            label="Purpose"
+            fullWidth
+            name="Purpose"
+            hintText='"Temple Recommend Interview"'
+            floatingLabelText="Purpose"
+            onChange={this.handleApptInputChange('apptTitle')}
+            onKeyDown={(evt) =>
+              this.keyPress(evt, this.state)} //submits appointment form when ENTER is pressed
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => this.addAppt()} color="primary">
+          <Button disabled={(this.state.apptName && this.state.apptTitle && this.state.apptPhone && this.state.validPhone)? false : true} onClick={() => this.addAppt()} color="primary">
             Schedule
           </Button>
           <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
@@ -163,6 +203,26 @@ class BishopPage extends Component {
         </DialogActions>
       </Dialog>
     );
+  }
+
+  validatePhone(phoneNumber) {
+    const newPhone = phoneNumber.replace(/\D/g,''); //removes any non-digits in the string
+    // console.log("inputPhone:",phoneNumber, ", newPhone:", newPhone);
+    const regex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
+    return regex.test(phoneNumber)
+      ? this.setState({ apptPhone: newPhone, validPhone: true })
+      : this.setState({ apptPhone: newPhone, validPhone: false });
+  }
+
+  keyPress(e, data){
+    // console.log("some key pressed");
+    if(e.keyCode === 13){
+      console.log("enter pressed");
+      if(data.apptName && data.apptTitle && data.apptPhone && data.validPhone){
+        console.log("adding appt");
+        this.addAppt();
+      }
+    }
   }
 
   render () {

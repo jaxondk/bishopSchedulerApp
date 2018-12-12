@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import { Provider, Heading, Subhead } from 'rebass'
 // import { Heading } from 'rebass'
 import {
-  Hero, CallToAction
+  Hero, 
+  // CallToAction
 } from 'react-landing-page'
 import Button from '@material-ui/core/Button';
 
@@ -22,7 +23,7 @@ class LandingPage extends Component {
         >
           <Heading>Secretariat</Heading>
           <br/>
-          <img src={require('./calendar3.png')} width="10%"/>
+          <img alt="calendar" src={require('./calendar3.png')} width="10%"/>
           {/* <Heading>Secretariat</Heading> */}
           <br/><br/>
           <Subhead>Manage a Bishop's schedule with ease</Subhead>
