@@ -15,8 +15,9 @@ import { extendMoment } from 'moment-range';
 // import InputSlider from 'react-input-slider';
 import { dialogs } from '../constants';
 import conn from '../lib/conn';
-const moment = extendMoment(Moment);
+import { slotRange } from '../lib/util';
 
+const moment = extendMoment(Moment);
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
   pageContainer: {
@@ -64,12 +65,17 @@ class BishopPage extends Component {
   }
 
   removeAppt (slot) {
+    // Send cancelation text
     const firstName = slot.appointment.name.split(' ')[0];
+    const time = this.state.selectedSlot.start;
+    const date = moment(time).format("dddd[,] MMMM Do");
+    const startTime = moment(time).format("h:mm a");
     const body = {
       to: slot.appointment.phone,
-      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
     conn.sendText(body);
+    // remove appt from db.
     const update = {
       title: 'Available',
       appointment: null
@@ -158,9 +164,12 @@ class BishopPage extends Component {
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle id="alert-dialog-slide-title">
-          Add Appointment?
+          Schedule Appointment?
         </DialogTitle>
         <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+            {slotRange(this.state.selectedSlot)}
+          </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
@@ -265,7 +274,7 @@ class BishopPage extends Component {
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
-              {this.state.selectedSlot.appointment ? this.state.selectedSlot.appointment.name : 'No appointment during this available timeslot'}
+              {this.state.selectedSlot.appointment ? 'With ' + this.state.selectedSlot.appointment.name + ' at ' : 'No appointment from '} {slotRange(this.state.selectedSlot)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -283,7 +292,7 @@ class BishopPage extends Component {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          title="Bishop's Schedule"
+          title="Your Schedule"
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
@@ -304,6 +313,7 @@ class BishopPage extends Component {
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}
+            titleAccessor={(slot) => (slot.appointment) ? ''+(slot.appointment.name)+': '+slot.title : slot.title}
             style={{ height: "100vh" }}
             selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
             onView={(view) => this.setState({ view: view })}
@@ -315,7 +325,6 @@ class BishopPage extends Component {
           />
         </div>
         {this.renderDialog()}
-        {/* {this.renderAddSlotDialog()} */}
       </div>
     );
   }
