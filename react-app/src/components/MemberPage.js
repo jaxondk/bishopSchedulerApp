@@ -105,11 +105,11 @@ class BishopPage extends Component {
     conn.sendText(body);
 
     // if we want to send text to member that they scheduled an appointment
-    // const member_body = {
-    //   to: update.appointment.phone,
-    //   msg: `${update.appointment.name.split(' ')[0]}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
-    // }
-    // conn.sendText(member_body);
+    const member_body = {
+      to: update.appointment.phone,
+      msg: `${update.appointment.name.split(' ')[0]}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
+    }
+    conn.sendText(member_body);
   }
 
   renderAddApptDialog () {
