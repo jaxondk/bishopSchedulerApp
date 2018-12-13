@@ -147,7 +147,19 @@ class BishopPage extends Component {
         phone: this.state.apptPhone,
       }
     };
-    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots }));
+    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => {
+      this.setState({ allSlots: slots });
+      // Simulate reminder text
+      const time = this.state.selectedSlot.start;
+      const date = moment(time).format("dddd[,] MMMM Do");
+      const startTime = moment(time).format("h:mm a");
+      const member_body = { 
+        to: update.appointment.phone,
+        msg: `${update.appointment.name.split(' ')[0]}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
+      }
+      conn.sendText(member_body);
+    });
+
     this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
   }
 
