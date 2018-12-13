@@ -224,8 +224,8 @@ class BishopPage extends Component {
           titleStyle={{ lineHeight: 'normal' }}
           title={
             <div>
-              <div style={{ marginTop: 10 }}>Your Bishop's Schedule</div>
-              <div style={{ fontSize: 'small', fontWeight: 300 }}>Click on a slot to reserve an appointment time.</div>
+              <div style={{ marginTop: 10 }}><strong>Your Bishop's Schedule</strong></div>
+              <div style={{ fontSize: 'small', fontWeight: 300 }}><strong>Click</strong> on an available slot to reserve an appointment time.</div>
             </div>
           }
           iconClassNameRight="muidocs-icon-navigation-expand-more"
@@ -233,7 +233,7 @@ class BishopPage extends Component {
         />
         <div style={styles.calendarContainer}>
           <BigCalendar
-            views={['day', 'week', 'month', 'agenda']}
+            views={['day', 'week', 'month']}
             localizer={localizer}
             step={this.state.apptDuration}
             defaultDate={new Date()}
