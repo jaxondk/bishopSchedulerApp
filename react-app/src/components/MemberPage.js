@@ -11,7 +11,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Snackbar from '@material-ui/core/Snackbar';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from 'moment';
-import { dialogs } from '../constants';
+import { dialogs, uiSettings } from '../constants';
 import { slotRange } from '../lib/util';
 import conn from '../lib/conn';
 
@@ -34,7 +34,7 @@ const styles = {
     pointerEvents: 'none',
   },
 }
-const DEFAULT_VIEW = 'week';
+
 const BISHOP_PHONE = '8323144134';
 
 class BishopPage extends Component {
@@ -42,7 +42,7 @@ class BishopPage extends Component {
     super(props, context);
     this.state = {
       allSlots: [],
-      view: DEFAULT_VIEW,
+      view: uiSettings.DEFAULT_VIEW,
       dialogOpen: null,
       selectedSlot: null,
       apptTitle: null,
@@ -110,7 +110,7 @@ class BishopPage extends Component {
 
     conn.updateSlot(this.state.selectedSlot._id, update, (slots) => {
       this.setState({ allSlots: slots })
-      conn.sendText(body, (success) => this.setState({ toastText: success ? 'Text notification sent to Bishop!' : 'Text notification failed to send' }));
+      conn.sendText(body, (success) => this.setState({ toastText: success ? 'Text notification sent to Bishop! We\'ll remind you of your appointment' : 'Text notification failed to send' }));
       conn.sendText(member_body);
     });
     this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
@@ -209,7 +209,7 @@ class BishopPage extends Component {
           horizontal: 'left',
         }}
         open={this.state.toastText}
-        autoHideDuration={3000}
+        autoHideDuration={uiSettings.TOAST_DURATION}
         onClose={() => this.setState({ toastText: null })}
         message={<span id="message-id">{this.state.toastText}</span>}
       >
@@ -237,7 +237,7 @@ class BishopPage extends Component {
             localizer={localizer}
             step={15}
             defaultDate={new Date()}
-            defaultView={DEFAULT_VIEW}
+            defaultView={uiSettings.DEFAULT_VIEW}
             events={this.state.allSlots}
             titleAccessor={(slot) => ((slot.appointment) ? 'Slot Taken' : 'Available')}
             style={{ height: "100vh" }}

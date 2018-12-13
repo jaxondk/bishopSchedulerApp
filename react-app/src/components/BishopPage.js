@@ -13,14 +13,14 @@ import Slide from '@material-ui/core/Slide';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Moment from 'moment';
 import { extendMoment } from 'moment-range';
-import { dialogs } from '../constants';
+import { dialogs, uiSettings } from '../constants';
 import conn from '../lib/conn';
 import { slotRange } from '../lib/util';
 
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
 
 const moment = extendMoment(Moment);
-moment.locale('en', {week: {dow: 1}});
+moment.locale('en', { week: { dow: 1 } });
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
   pageContainer: {
@@ -38,17 +38,15 @@ const styles = {
     cursor: 'pointer',
   },
 }
-const DEFAULT_VIEW = 'week';
-const DEFAULT_SLOT_DURATION = 30;
 
 class BishopPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
       allSlots: [],
-      slotDuration: DEFAULT_SLOT_DURATION, //in minutes
-      view: DEFAULT_VIEW,
-      toastText: false,
+      slotDuration: uiSettings.DEFAULT_SLOT_DURATION, //in minutes
+      view: uiSettings.DEFAULT_VIEW,
+      toastText: null,
       dialogOpen: null,
       selectedSlot: null,
       selectedRange: null,
@@ -77,7 +75,7 @@ class BishopPage extends Component {
       to: slot.appointment.phone,
       msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
-    
+
     // remove appt from db.
     const update = {
       title: 'Available',
@@ -85,7 +83,7 @@ class BishopPage extends Component {
     };
     conn.updateSlot(slot._id, update, (slots) => {
       this.setState({ allSlots: slots, dialogOpen: null })
-      conn.sendText(body, (success) => this.setState({toastText: success ? `Text notification sent to ${firstName}!` : 'Text notification failed to send'}));
+      conn.sendText(body, (success) => this.setState({ toastText: success ? `Text notification sent to ${firstName}!` : 'Text notification failed to send' }));
     });
   }
 
@@ -100,7 +98,7 @@ class BishopPage extends Component {
 
   addSlots ({ start, end }) {
     const length = moment(start).add("minutes", this.state.slotDuration);
-    if(end < length){
+    if (end < length) {
       end = length;
     }
     const range = moment.range(start, end);
@@ -115,7 +113,7 @@ class BishopPage extends Component {
         conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
       }
     });
-    this.setState({ dialogOpen: null, slotDuration: DEFAULT_SLOT_DURATION});
+    this.setState({ dialogOpen: null, slotDuration: uiSettings.DEFAULT_SLOT_DURATION });
   }
 
   eventStyleGetter (slot) {
@@ -148,19 +146,21 @@ class BishopPage extends Component {
       }
     };
     conn.updateSlot(this.state.selectedSlot._id, update, (slots) => {
-      this.setState({ allSlots: slots });
       // Simulate reminder text
+      const firstName = update.appointment.name.split(' ')[0];
       const time = this.state.selectedSlot.start;
       const date = moment(time).format("dddd[,] MMMM Do");
       const startTime = moment(time).format("h:mm a");
-      const member_body = { 
+      const member_body = {
         to: update.appointment.phone,
-        msg: `${update.appointment.name.split(' ')[0]}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
+        msg: `${firstName}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
       }
       conn.sendText(member_body);
+      //Update slots and Toast to let bishop know that the member will get a reminder text
+      this.setState({ allSlots: slots, toastText: `Done! We'll remind ${firstName} for you` });
     });
 
-    this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
+    this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true })
   }
 
   renderDialog () {
@@ -207,7 +207,7 @@ class BishopPage extends Component {
             margin="dense"
             id="phone"
             label="Phone Number"
-            fullWidth  
+            fullWidth
             name="Phone Number"
             hintText="5555555555"
             floatingLabelText="Phone Number"
@@ -232,7 +232,7 @@ class BishopPage extends Component {
           />
         </DialogContent>
         <DialogActions>
-          <Button disabled={(this.state.apptName && this.state.apptTitle && this.state.apptPhone && this.state.validPhone)? false : true} onClick={() => this.addAppt()} color="primary">
+          <Button disabled={(this.state.apptName && this.state.apptTitle && this.state.apptPhone && this.state.validPhone) ? false : true} onClick={() => this.addAppt()} color="primary">
             Schedule
           </Button>
           <Button onClick={() => this.setState({ dialogOpen: null })} color="secondary">
@@ -242,42 +242,42 @@ class BishopPage extends Component {
       </Dialog>
     );
   }
-  
-  keyPress(e, data){
-    if(e.keyCode === 13){
-      if(data.apptName && data.apptTitle && data.apptPhone && data.validPhone){
+
+  keyPress (e, data) {
+    if (e.keyCode === 13) {
+      if (data.apptName && data.apptTitle && data.apptPhone && data.validPhone) {
         this.addAppt();
       }
     }
   }
-  renderApptDurations() {
+  renderApptDurations () {
     if (!this.state.isLoading) {
       const durations = [30, 45, 60];
-        return durations.map(duration => {
-          return (
-            <RadioButton
-              label={duration + " minutes"}
-              key={durations.indexOf(duration)}
-              value={duration}
-              style={{
-                marginBottom: 15,
-              }}
-            />
-          );
-        });
-      }
+      return durations.map(duration => {
+        return (
+          <RadioButton
+            label={duration + " minutes"}
+            key={durations.indexOf(duration)}
+            value={duration}
+            style={{
+              marginBottom: 15,
+            }}
+          />
+        );
+      });
+    }
   }
 
-  validatePhone(phoneNumber) {
-    const newPhone = phoneNumber.replace(/\D/g,''); //removes any non-digits in the string
+  validatePhone (phoneNumber) {
+    const newPhone = phoneNumber.replace(/\D/g, ''); //removes any non-digits in the string
     const regex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
       ? this.setState({ apptPhone: newPhone, validPhone: true })
       : this.setState({ apptPhone: newPhone, validPhone: false });
   }
 
-  handleSetAppointmentDuration(duration) {
-    this.state.slotDuration = duration; //don't want it to rerender each time it's changed.. is there a etter way to do this?
+  handleSetAppointmentDuration (duration) {
+    this.state.slotDuration = duration; //don't want it to rerender each time it's changed.. is there a better way to do this?
   }
 
   renderDetailBtns () {
@@ -319,10 +319,10 @@ class BishopPage extends Component {
               marginLeft: 15
             }}
             name="appointmentTimes"
-            defaultSelected={DEFAULT_SLOT_DURATION}
+            defaultSelected={uiSettings.DEFAULT_SLOT_DURATION}
             onChange={(evt, val) => this.handleSetAppointmentDuration(val)}
           >
-          {this.renderApptDurations()}
+            {this.renderApptDurations()}
           </RadioButtonGroup>
           <DialogActions>
             <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
@@ -354,7 +354,7 @@ class BishopPage extends Component {
           <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
               {this.state.selectedSlot.appointment ? 'With ' + this.state.selectedSlot.appointment.name + ' at ' : 'No appointment from '} {slotRange(this.state.selectedSlot)}
-              <br/>
+              <br />
               {this.state.selectedSlot.appointment ? "Phone: " + this.state.selectedSlot.appointment.phone : ""}
             </DialogContentText>
           </DialogContent>
@@ -369,16 +369,16 @@ class BishopPage extends Component {
     );
   }
 
-  renderSmsToast() {
+  renderSmsToast () {
     return (
       <Snackbar
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'left',
         }}
-        open={this.state.toastText}
-        autoHideDuration={3000}
-        onClose={() => this.setState({toastText: null})}
+        open={this.state.toastText !== null}
+        autoHideDuration={uiSettings.TOAST_DURATION}
+        onClose={() => this.setState({ toastText: null })}
         message={<span id="message-id">{this.state.toastText}</span>}
       >
       </Snackbar>
@@ -392,7 +392,7 @@ class BishopPage extends Component {
           titleStyle={{ lineHeight: 'normal' }}
           title={
             <div>
-              <div style={{ marginTop: 10}}><strong>Your Schedule</strong></div>
+              <div style={{ marginTop: 10 }}><strong>Your Schedule</strong></div>
               <div style={{ fontSize: 'small', fontWeight: 300 }}><strong>Click</strong> on the calendar to set a time you're available to meet. <strong>Click and drag</strong> to select multiple times at once.</div>
             </div>
           }
@@ -405,9 +405,9 @@ class BishopPage extends Component {
             localizer={localizer}
             step={15}
             defaultDate={new Date()}
-            defaultView={DEFAULT_VIEW}
+            defaultView={uiSettings.DEFAULT_VIEW}
             events={this.state.allSlots}
-            titleAccessor={(slot) => (slot.appointment) ? ''+(slot.appointment.name)+': '+slot.title : slot.title}
+            titleAccessor={(slot) => (slot.appointment) ? '' + (slot.appointment.name) + ': ' + slot.title : slot.title}
             style={{ height: "100vh" }}
             selectable={(this.state.view === 'month') ? false : 'ignoreEvents'}
             onView={(view) => this.setState({ view: view })}

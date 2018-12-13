@@ -4,6 +4,12 @@ export const dialogs = {
   SLOT_DETAIL: 'SLOT_DETAIL',
 }
 
+export const uiSettings = {
+  DEFAULT_VIEW: 'week',
+  DEFAULT_SLOT_DURATION: 30,
+  TOAST_DURATION: 4000,
+};
+
 export const leader = {
   BISHOP: "Bishop",
   FIRST_C: "1st Counselor",
