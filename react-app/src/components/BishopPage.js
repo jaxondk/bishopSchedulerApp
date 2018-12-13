@@ -73,7 +73,7 @@ class BishopPage extends Component {
     const startTime = moment(time).format("h:mm a");
     const body = {
       to: slot.appointment.phone,
-      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
+      msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go to http://178.128.68.128/members and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
 
     // remove appt from db.
