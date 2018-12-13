@@ -240,7 +240,7 @@ class BishopPage extends Component {
   }
   renderApptDurations() {
     if (!this.state.isLoading) {
-      const durations = [15, 30, 45, 60];
+      const durations = [30, 45, 60];
         return durations.map(duration => {
           return (
             <RadioButton
@@ -389,7 +389,7 @@ class BishopPage extends Component {
         /> */}
         <div style={styles.calendarContainer}>
           <BigCalendar
-            views={['day', 'week', 'month', 'agenda']}
+            views={['day', 'week', 'month']}
             localizer={localizer}
             // step={this.state.apptDuration}
             step={15}
