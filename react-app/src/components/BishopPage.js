@@ -341,6 +341,8 @@ class BishopPage extends Component {
           <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
               {this.state.selectedSlot.appointment ? 'With ' + this.state.selectedSlot.appointment.name + ' at ' : 'No appointment from '} {slotRange(this.state.selectedSlot)}
+              <br/>
+              {this.state.selectedSlot.appointment ? "Phone: " + this.state.selectedSlot.appointment.phone : ""}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
