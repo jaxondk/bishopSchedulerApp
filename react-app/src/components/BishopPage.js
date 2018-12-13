@@ -8,11 +8,11 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Snackbar from '@material-ui/core/Snackbar';
 import Slide from '@material-ui/core/Slide';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Moment from 'moment';
 import { extendMoment } from 'moment-range';
-// import InputSlider from 'react-input-slider';
 import { dialogs } from '../constants';
 import conn from '../lib/conn';
 import { slotRange } from '../lib/util';
@@ -25,9 +25,6 @@ const styles = {
   pageContainer: {
     flex: 1,
   },
-  // sliderContainer: {
-  //   flex: 1,
-  // },
   calendarContainer: {
     flex: 1,
     margin: 10,
@@ -49,6 +46,7 @@ class BishopPage extends Component {
       allSlots: [],
       apptDuration: 15, //in minutes
       view: DEFAULT_VIEW,
+      toastText: false,
       dialogOpen: null,
       selectedSlot: null,
       selectedRange: null,
@@ -68,7 +66,7 @@ class BishopPage extends Component {
   }
 
   removeAppt (slot) {
-    // Send cancelation text
+    // Prepare cancelation text
     const firstName = slot.appointment.name.split(' ')[0];
     const time = this.state.selectedSlot.start;
     const date = moment(time).format("dddd[,] MMMM Do");
@@ -77,13 +75,16 @@ class BishopPage extends Component {
       to: slot.appointment.phone,
       msg: `Hey ${firstName}, Bishop had to cancel his upcoming appointment with you on ${date} at ${startTime}. Please go back to our scheduling site and schedule a new appointment. Thanks! \n -- <3 Your favorite executive secretary`,
     }
-    conn.sendText(body);
+    
     // remove appt from db.
     const update = {
       title: 'Available',
       appointment: null
     };
-    conn.updateSlot(slot._id, update, (slots) => this.setState({ allSlots: slots, dialogOpen: null }));
+    conn.updateSlot(slot._id, update, (slots) => {
+      this.setState({ allSlots: slots, dialogOpen: null })
+      conn.sendText(body, (success) => this.setState({toastText: success ? `Text notification sent to ${firstName}!` : 'Text notification failed to send'}));
+    });
   }
 
   removeSlot (slot) {
@@ -229,11 +230,8 @@ class BishopPage extends Component {
   }
   
   keyPress(e, data){
-    // console.log("some key pressed");
     if(e.keyCode === 13){
-      console.log("enter pressed");
       if(data.apptName && data.apptTitle && data.apptPhone && data.validPhone){
-        console.log("adding appt");
         this.addAppt();
       }
     }
@@ -258,7 +256,6 @@ class BishopPage extends Component {
 
   validatePhone(phoneNumber) {
     const newPhone = phoneNumber.replace(/\D/g,''); //removes any non-digits in the string
-    // console.log("inputPhone:",phoneNumber, ", newPhone:", newPhone);
     const regex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
       ? this.setState({ apptPhone: newPhone, validPhone: true })
@@ -266,8 +263,8 @@ class BishopPage extends Component {
   }
 
   handleSetAppointmentDuration(duration) {
-    // this.setState({ apptDuration: duration });
-    this.state.apptDuration = duration; //don't want it to rerender each time it's changed.. is there a etter way to do this?
+    this.setState({ apptDuration: duration });
+    // this.state.apptDuration = duration; //don't want it to rerender each time it's changed.. is there a etter way to do this?
   }
 
   renderDetailBtns () {
@@ -314,11 +311,6 @@ class BishopPage extends Component {
           >
           {this.renderApptDurations()}
           </RadioButtonGroup>
-          {/* <DialogContent>
-            <DialogContentText id="alert-dialog-slide-description">
-              Create new available time slot(s) from this range?
-            </DialogContentText>
-          </DialogContent> */}
           <DialogActions>
             <Button onClick={() => this.addSlots(this.state.selectedRange)} color="primary">
               Add Slot(s)
@@ -362,31 +354,36 @@ class BishopPage extends Component {
     );
   }
 
+  renderSmsToast() {
+    return (
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        open={this.state.toastText}
+        autoHideDuration={3000}
+        onClose={() => this.setState({toastText: null})}
+        message={<span id="message-id">{this.state.toastText}</span>}
+      >
+      </Snackbar>
+    )
+  }
+
   render () {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          // title="Your Schedule"
           titleStyle={{ lineHeight: 'normal' }}
           title={
             <div>
               <div style={{ marginTop: 10}}><strong>Your Schedule</strong></div>
-              <div style={{ fontSize: 'small', fontWeight: 300 }}><strong>Click</strong> on the calendar to set times you're available to meet. <strong>Click and drag</strong> to select available time range.</div>
-              {/* <div style={{ fontSize: 'small', fontWeight: 300 }}>Click and drag to select available time range.</div> */}
+              <div style={{ fontSize: 'small', fontWeight: 300 }}><strong>Click</strong> on the calendar to set a time you're available to meet. <strong>Click and drag</strong> to select multiple times at once.</div>
             </div>
           }
           iconClassNameRight="muidocs-icon-navigation-expand-more"
           showMenuIconButton={false}
         />
-        {/* <InputSlider
-          className="slider"
-          axis="x"
-          x={this.state.apptDuration}
-          xmin={15}
-          xmax={120}
-          xstep={15}
-          onChange={(pos) => this.setState({ apptDuration: pos.x })}
-        /> */}
         <div style={styles.calendarContainer}>
           <BigCalendar
             views={['day', 'week', 'month', 'agenda']}
@@ -408,6 +405,7 @@ class BishopPage extends Component {
           />
         </div>
         {this.renderDialog()}
+        {this.renderSmsToast()}
       </div>
     );
   }

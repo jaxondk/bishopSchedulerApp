@@ -8,6 +8,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Snackbar from '@material-ui/core/Snackbar';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from 'moment';
 import { dialogs } from '../constants';
@@ -47,7 +48,8 @@ class BishopPage extends Component {
       apptTitle: null,
       apptName: null,
       apptPhone: null,
-      validPhone: true
+      validPhone: true,
+      toastText: null,
     };
   }
 
@@ -93,10 +95,7 @@ class BishopPage extends Component {
         phone: this.state.apptPhone,
       }
     };
-    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => this.setState({ allSlots: slots }));
-    this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
-    // this.setState({ dialogOpen: null })
-    // Send text
+    // Prepare texts
     const time = this.state.selectedSlot.start;
     const date = moment(time).format("dddd[,] MMMM Do");
     const startTime = moment(time).format("h:mm a");
@@ -104,14 +103,17 @@ class BishopPage extends Component {
       to: BISHOP_PHONE,
       msg: `Bishop, ${update.appointment.name} just signed up to meet with you on ${date} at ${startTime}. The purpose they stated for the appointment is "${update.title}" \n -- <3 Your favorite executive secretary`,
     }
-    conn.sendText(body);
-
-    // if we want to send text to member that they scheduled an appointment
-    const member_body = {
+    const member_body = { // if we want to send text to member that they scheduled an appointment
       to: update.appointment.phone,
       msg: `${update.appointment.name.split(' ')[0]}, this is a reminder of your appointment with Bishop on ${date} at ${startTime} for "${update.title}".`,
     }
-    conn.sendText(member_body);
+
+    conn.updateSlot(this.state.selectedSlot._id, update, (slots) => {
+      this.setState({ allSlots: slots })
+      conn.sendText(body, (success) => this.setState({ toastText: success ? 'Text notification sent to Bishop!' : 'Text notification failed to send' }));
+      conn.sendText(member_body);
+    });
+    this.setState({ dialogOpen: null, apptName: null, apptPhone: null, apptTitle: null, validPhone: true})
   }
 
   renderAddApptDialog () {
@@ -130,30 +132,6 @@ class BishopPage extends Component {
           <DialogContentText id="alert-dialog-slide-description">
             {slotRange(this.state.selectedSlot)}
           </DialogContentText>
-          {/* <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Full Name"
-            fullWidth
-            onChange={this.handleApptInputChange('apptName')}
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            id="phone"
-            label="Phone Number"
-            fullWidth
-            onChange={this.handleApptInputChange('apptPhone')}
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            id="title"
-            label="Purpose"
-            fullWidth
-            onChange={this.handleApptInputChange('apptTitle')}
-          /> */}
           <TextField
             autoFocus
             margin="dense"
@@ -207,7 +185,6 @@ class BishopPage extends Component {
 
   validatePhone(phoneNumber) {
     const newPhone = phoneNumber.replace(/\D/g,''); //removes any non-digits in the string
-    // console.log("inputPhone:",phoneNumber, ", newPhone:", newPhone);
     const regex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     return regex.test(phoneNumber)
       ? this.setState({ apptPhone: newPhone, validPhone: true })
@@ -215,7 +192,6 @@ class BishopPage extends Component {
   }
 
   keyPress(e, data){
-    // console.log("some key pressed");
     if(e.keyCode === 13){
       console.log("enter pressed");
       if(data.apptName && data.apptTitle && data.apptPhone && data.validPhone){
@@ -225,11 +201,26 @@ class BishopPage extends Component {
     }
   }
 
+  renderSmsToast () {
+    return (
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        open={this.state.toastText}
+        autoHideDuration={3000}
+        onClose={() => this.setState({ toastText: null })}
+        message={<span id="message-id">{this.state.toastText}</span>}
+      >
+      </Snackbar>
+    )
+  }
+
   render () {
     return (
       <div style={styles.pageContainer}>
         <AppBar
-          // title="Your Bishop's Schedule"
           titleStyle={{ lineHeight: 'normal' }}
           title={
             <div>
@@ -259,6 +250,7 @@ class BishopPage extends Component {
           />
         </div>
         {this.renderAddApptDialog()}
+        {this.renderSmsToast()}
       </div>
     );
   }
