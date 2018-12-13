@@ -101,7 +101,7 @@ class BishopPage extends Component {
     const startTime = moment(time).format("h:mm a");
     const body = {
       to: BISHOP_PHONE,
-      msg: `Bishop, ${update.appointment.name} just signed up to meet with you on ${date} at ${startTime}. The purpose they stated for the appointment is "${update.title}" \n -- <3 Your favorite executive secretary`,
+      msg: `Bishop, ${update.appointment.name} just signed up to meet with you on ${date} at ${startTime}. Manage your appointments at http://178.128.68.128/bishopric \n -- <3 Your favorite executive secretary`,
     }
     const member_body = { // if we want to send text to member that they scheduled an appointment
       to: update.appointment.phone,
