@@ -42,7 +42,6 @@ class BishopPage extends Component {
     super(props, context);
     this.state = {
       allSlots: [],
-      apptDuration: 15, //in minutes
       view: DEFAULT_VIEW,
       dialogOpen: null,
       selectedSlot: null,
@@ -236,7 +235,7 @@ class BishopPage extends Component {
           <BigCalendar
             views={['day', 'week', 'month']}
             localizer={localizer}
-            step={this.state.apptDuration}
+            step={15}
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
             events={this.state.allSlots}

@@ -39,13 +39,14 @@ const styles = {
   },
 }
 const DEFAULT_VIEW = 'week';
+const DEFAULT_SLOT_DURATION = 30;
 
 class BishopPage extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
       allSlots: [],
-      apptDuration: 15, //in minutes
+      slotDuration: DEFAULT_SLOT_DURATION, //in minutes
       view: DEFAULT_VIEW,
       toastText: false,
       dialogOpen: null,
@@ -98,12 +99,12 @@ class BishopPage extends Component {
   }
 
   addSlots ({ start, end }) {
-    const length = moment(start).add("minutes", this.state.apptDuration);
+    const length = moment(start).add("minutes", this.state.slotDuration);
     if(end < length){
       end = length;
     }
     const range = moment.range(start, end);
-    var times = Array.from(range.by('minutes', { step: this.state.apptDuration }));
+    var times = Array.from(range.by('minutes', { step: this.state.slotDuration }));
     times.forEach((start_moment, i) => {
       if (i !== times.length - 1) {
         const new_slot = {
@@ -114,7 +115,7 @@ class BishopPage extends Component {
         conn.createSlot(new_slot, (new_slot) => this.setState({ allSlots: [...this.state.allSlots, new_slot] }));
       }
     });
-    this.setState({ dialogOpen: null, apptDuration: 15});
+    this.setState({ dialogOpen: null, slotDuration: DEFAULT_SLOT_DURATION});
   }
 
   eventStyleGetter (slot) {
@@ -264,8 +265,7 @@ class BishopPage extends Component {
   }
 
   handleSetAppointmentDuration(duration) {
-    this.setState({ apptDuration: duration });
-    // this.state.apptDuration = duration; //don't want it to rerender each time it's changed.. is there a etter way to do this?
+    this.state.slotDuration = duration; //don't want it to rerender each time it's changed.. is there a etter way to do this?
   }
 
   renderDetailBtns () {
@@ -307,7 +307,7 @@ class BishopPage extends Component {
               marginLeft: 15
             }}
             name="appointmentTimes"
-            defaultSelected={15}
+            defaultSelected={DEFAULT_SLOT_DURATION}
             onChange={(evt, val) => this.handleSetAppointmentDuration(val)}
           >
           {this.renderApptDurations()}
@@ -391,7 +391,6 @@ class BishopPage extends Component {
           <BigCalendar
             views={['day', 'week', 'month']}
             localizer={localizer}
-            // step={this.state.apptDuration}
             step={15}
             defaultDate={new Date()}
             defaultView={DEFAULT_VIEW}
