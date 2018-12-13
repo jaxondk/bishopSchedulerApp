@@ -20,6 +20,7 @@ import { slotRange } from '../lib/util';
 import { RadioButton, RadioButtonGroup } from "material-ui/RadioButton";
 
 const moment = extendMoment(Moment);
+moment.locale('en', {week: {dow: 1}});
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
   pageContainer: {

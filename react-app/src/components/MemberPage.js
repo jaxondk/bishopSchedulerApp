@@ -15,6 +15,7 @@ import { dialogs } from '../constants';
 import { slotRange } from '../lib/util';
 import conn from '../lib/conn';
 
+moment.locale('en', { week: { dow: 1 } });
 const localizer = BigCalendar.momentLocalizer(moment);
 const styles = {
   pageContainer: {
